@@ -142,6 +142,11 @@ public:
         return m_iSocket;
     }
 
+    /**
+     * Resolves a hostname and returns the 4 bytes of its IPv4 address.
+     */
+    static const unsigned char *Resolve(const char *name);
+
 public:
     /**
      * Initializes the module.

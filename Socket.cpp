@@ -100,6 +100,19 @@ int Socket::Unlock(Socket *s)
     return sock;
 }
 
+const unsigned char *Socket::Resolve(const char *name)
+{
+    struct hostent *h = gethostbyname(name);
+    if(h == NULL)
+        return NULL;
+    else
+    {
+        static unsigned char buf[4];
+        *((struct in_addr*)buf) = *((struct in_addr*)h->h_addr);
+        return buf;
+    }
+}
+
 /*============================================================================*/
 
 ClientSocket::ClientSocket(int sock)
