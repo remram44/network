@@ -3,7 +3,6 @@ CPP=g++
 RM=del /F
 AR=ar rcs
 INCLUDES=
-#LIBS=
 CPPFLAGS = $(INCLUDE) -g -Wall -O2
 
 .PHONY: all clean
@@ -11,8 +10,8 @@ CPPFLAGS = $(INCLUDE) -g -Wall -O2
 all: ../libsockets.a
 
 # Builds the static library
-../libsockets.a: Socket.o
-	$(AR) ../libsockets.a Socket.o
+../libsockets.a: Socket.o SSLSocket.o
+	$(AR) ../libsockets.a Socket.o SSLSocket.o
 
 # Compile a .cpp into a .o
 %.o: %.cpp
@@ -21,3 +20,6 @@ all: ../libsockets.a
 # Clean up object files
 clean:
 	$(RM) *.o
+
+Socket.o: Socket.h
+SSLSocket.o: SSLSocket.h Socket.h

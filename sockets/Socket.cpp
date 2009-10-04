@@ -102,6 +102,7 @@ int Socket::Unlock(Socket *s)
     return sock;
 }
 
+// FIXME : to be updated (IPv6, ...)
 const unsigned char *Socket::Resolve(const char *name)
 {
     struct hostent *h = gethostbyname(name);
@@ -110,26 +111,26 @@ const unsigned char *Socket::Resolve(const char *name)
     else
     {
         static unsigned char buf[4];
-        *((struct in_addr*)buf) = *((struct in_addr*)h->h_addr);
+        memcpy(buf, h->h_addr, sizeof(struct in_addr));
         return buf;
     }
 }
 
 /*============================================================================*/
 
-ClientSocket::ClientSocket(int sock)
+TCPSocket::TCPSocket(int sock)
   : Socket::Socket(sock)
 {
 }
 
-ClientSocket *ClientSocket::Connect(const char *hote, int port)
+TCPSocket *TCPSocket::Connect(const char *host, int port)
     throw(SocketUnknownHost, SocketConnectionRefused)
 {
-    ClientSocket *sock = new ClientSocket(socket(AF_INET, SOCK_STREAM, 0));
+    TCPSocket *sock = new TCPSocket(socket(AF_INET, SOCK_STREAM, 0));
 
     // Hostname resolution
     struct sockaddr_in adresse;
-    struct hostent* h = gethostbyname(hote);
+    struct hostent* h = gethostbyname(host);
     if(h == NULL)
     {
         throw SocketUnknownHost();
@@ -150,7 +151,7 @@ ClientSocket *ClientSocket::Connect(const char *hote, int port)
     return sock;
 }
 
-void ClientSocket::Send(const char *data, size_t size)
+void TCPSocket::Send(const char *data, size_t size)
     throw(SocketConnectionClosed)
 {
     int ret = send(GetSocket(), data, size, 0);
@@ -158,7 +159,7 @@ void ClientSocket::Send(const char *data, size_t size)
         throw SocketConnectionClosed();
 }
 
-int ClientSocket::Recv(char *data, int size_max, bool bWait)
+int TCPSocket::Recv(char *data, size_t size_max, bool bWait)
     throw(SocketConnectionClosed)
 {
     if(bWait || Wait(0))
@@ -173,16 +174,21 @@ int ClientSocket::Recv(char *data, int size_max, bool bWait)
         return 0;
 }
 
+Socket *TCPSocket::UnderlyingSocket()
+{
+    return this;
+}
+
 /*============================================================================*/
 
-ServerSocket::ServerSocket(int sock)
+TCPServer::TCPServer(int sock)
   : Socket::Socket(sock)
 {
 }
 
-ServerSocket *ServerSocket::Listen(int port) throw(SocketCantUsePort)
+TCPServer *TCPServer::Listen(int port) throw(SocketCantUsePort)
 {
-    ServerSocket *sock = new ServerSocket(socket(AF_INET, SOCK_STREAM, 0));
+    TCPServer *sock = new TCPServer(socket(AF_INET, SOCK_STREAM, 0));
 
     struct sockaddr_in sin;
     sin.sin_addr.s_addr = INADDR_ANY;
@@ -196,7 +202,7 @@ ServerSocket *ServerSocket::Listen(int port) throw(SocketCantUsePort)
     return sock;
 }
 
-ClientSocket *ServerSocket::Accept(int timeout)
+TCPSocket *TCPServer::Accept(int timeout)
 {
     if(Wait(timeout))
     {
@@ -205,7 +211,7 @@ ClientSocket *ServerSocket::Accept(int timeout)
         int sock = accept(GetSocket(), (struct sockaddr*)&clientsin, &taille);
 
         if(sock != -1)
-            return new ClientSocket(sock);
+            return new TCPSocket(sock);
         else
         {
             // Shoudln't happen! Did someone close our socket?

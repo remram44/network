@@ -168,26 +168,15 @@ public:
 /*============================================================================*/
 
 /**
- * A connected TCP socket.
+ * A bidirectional network connection.
  *
- * The most simple socket, on which we can send and receive data.
+ * This interface represents any type of bytestream, for instance a raw TCP
+ * socket, a SSL transmission, the traversal of one or more proxies, ...
  */
-class ClientSocket : public Socket {
+class NetStream {
 
 public:
-    /**
-     * Constructor from a previously connected socket.
-     */
-    ClientSocket(int sock);
-
-    /**
-     * Static method establishing a new connection.
-     *
-     * @param hote Hostname, for instance "www.debian.com".
-     * @param port Port number on which to connect.
-     */
-    static ClientSocket *Connect(const char *host, int port)
-        throw(SocketUnknownHost, SocketConnectionRefused);
+    virtual ~NetStream() {}
 
     /**
      * Sends data.
@@ -195,7 +184,8 @@ public:
      * @param data Raw data to send.
      * @param size Size (in bytes) of the data.
      */
-    void Send(const char *data, size_t size) throw(SocketConnectionClosed);
+    virtual void Send(const char *data, size_t size)
+        throw(SocketConnectionClosed) = 0;
 
     /**
      * Receives data.
@@ -204,8 +194,68 @@ public:
      * nothing is initially available. If false, this method can return 0.
      * @return Number of bytes that were received.
      */
-    int Recv(char *data, int size_max, bool bWait = true)
+    virtual int Recv(char *data, size_t size_max, bool bWait = true)
+        throw(SocketConnectionClosed) = 0;
+
+    /**
+     * The underlying socket, if any.
+     *
+     * If it has a meaning, the underlying socket used to communicate, for
+     * instance with the first proxy server. Obviously, it shouldn't be used for
+     * communication, as the transmission can use one or more protocols on top
+     * of this socket.
+     * If it doesn't have any meaning, this function will return NULL.
+     */
+    virtual Socket *UnderlyingSocket() = 0;
+
+};
+
+
+/*============================================================================*/
+
+/**
+ * A connected TCP socket.
+ *
+ * The most simple socket, on which we can send and receive data.
+ */
+class TCPSocket : public NetStream, public Socket {
+
+public:
+    /**
+     * Constructor from a previously connected socket.
+     */
+    TCPSocket(int sock);
+
+    virtual ~TCPSocket() {}
+
+    /**
+     * Static method establishing a new connection.
+     *
+     * @param hote Hostname, for instance "www.debian.com".
+     * @param port Port number on which to connect.
+     */
+    static TCPSocket *Connect(const char *host, int port)
+        throw(SocketUnknownHost, SocketConnectionRefused);
+
+    /**
+     * Sends data.
+     *
+     * @param data Raw data to send.
+     * @param size Size (in bytes) of the data.
+     */
+    virtual void Send(const char *data, size_t size) throw(SocketConnectionClosed);
+
+    /**
+     * Receives data.
+     *
+     * @param bWait Indicates whether we should wait for data to arrive, if
+     * nothing is initially available. If false, this method can return 0.
+     * @return Number of bytes that were received.
+     */
+    virtual int Recv(char *data, size_t size_max, bool bWait = true)
         throw(SocketConnectionClosed);
+
+    Socket *UnderlyingSocket();
 
 };
 
@@ -217,20 +267,22 @@ public:
  *
  * Allows to listen on a port and accept TCP connections.
  */
-class ServerSocket : public Socket {
+class TCPServer : public Socket {
 
 public:
     /**
      * Constructor from a socket already listening on a port.
      */
-    ServerSocket(int sock);
+    TCPServer(int sock);
+
+    virtual ~TCPServer() {}
 
     /**
      * Static method creating a server socket listening on a given port number.
      *
      * @param port Port number on which to listen for connections.
      */
-    static ServerSocket *Listen(int port) throw(SocketCantUsePort);
+    static TCPServer *Listen(int port) throw(SocketCantUsePort);
 
     /**
      * Accepts one connection from a client.
@@ -240,7 +292,7 @@ public:
      * @return A socket connected to the client, or NULL if no client attempted
      * to connected after this time.
      */
-    ClientSocket *Accept(int timeout = 0);
+    virtual TCPSocket *Accept(int timeout = 0);
 
 };
 
