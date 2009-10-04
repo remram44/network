@@ -21,6 +21,8 @@
     #include <netdb.h>
     #include <errno.h>
     #include <unistd.h>
+    
+    typedef int SOCKET;
 #endif
 
 /*==============================================================================

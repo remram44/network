@@ -30,6 +30,8 @@ const char *SocketCantUsePort::what()
 Socket::Socket(int sock)
   : m_iSocket(sock)
 {
+    if(m_iSocket == -1)
+        throw SocketFatalError();
 }
 
 Socket::~Socket()
@@ -75,7 +77,7 @@ bool Socket::Wait(int timeout) const
 {
     fd_set fds;
     FD_ZERO(&fds);
-    FD_SET(m_iSocket, &fds);
+    FD_SET((SOCKET)m_iSocket, &fds);
 
     if(timeout < 0)
         select(m_iSocket + 1, &fds, NULL, NULL, NULL);
@@ -260,7 +262,7 @@ Socket *SocketSet::Wait(int timeout)
     {
         if((*it)->GetSocket() > greatest)
             greatest = (*it)->GetSocket();
-        FD_SET((*it)->GetSocket(), &fds);
+        FD_SET((SOCKET)(*it)->GetSocket(), &fds);
         it++;
     }
 
