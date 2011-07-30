@@ -5,19 +5,23 @@ INCLUDES=
 #LIBS=
 LIBS=-lmingw32 -lws2_32
 CPPFLAGS = $(INCLUDE) -g -Wall -O2
+MAKE=make
 
-.PHONY: all clean
+.PHONY: all sockets engine clean
 
 all: test-sockets.exe
 
+sockets:
+	$(MAKE) -C sockets
+
+engine: sockets
+	$(MAKE) -C engine
+
 # Linking
-test-sockets.exe: test-sockets.o Socket.o
-	$(CPP) -o $@ test-sockets.o Socket.o $(LIBS)
+test-sockets.exe: sockets test-sockets.o
+	$(CPP) -o $@ test-sockets.o -L. -lsockets $(LIBS)
 
-# Compile a .cpp into a .o
-%.o: %.cpp
-	$(CPP) -c $(CPPFLAGS) $< -o $@
-
-# Clean up object files
 clean:
-	$(RM) *.o
+	$(RM) test-sockets.o
+	$(MAKE) -C sockets clean
+	$(MAKE) -C engine clean
