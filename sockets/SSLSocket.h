@@ -87,9 +87,6 @@ public:
 class SSLServer : public SSLSocket, public TCPServer {
 
 private:
-    SSL *m_SSL;
-    BIO *m_SBIO;
-
     SSLConfig m_Config;
 
 protected:

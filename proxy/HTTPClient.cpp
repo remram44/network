@@ -16,7 +16,7 @@ NetStream *HTTPClient::Connect(const char *hote, int port)
     std::cerr << "HTTPClient: connection...";
 #endif
     NetStream *s = m_pProxy->Connect(m_sHost.c_str(), m_iPort);
-#ifndef _DEBUG
+#ifdef _DEBUG
     std::cerr << " ok\n";
 #endif
     std::ostringstream oss;

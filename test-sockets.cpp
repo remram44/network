@@ -99,7 +99,8 @@ int main(int argc, char **argv)
             bool stop = false;
             do {
                 try {
-                    conn->Recv(buf, 256);
+                    int ret = conn->Recv(buf, 256);
+                    buf[ret] = '\0';
                     std::cout << buf;
                 }
                 catch(SocketConnectionClosed &e)
@@ -126,7 +127,10 @@ int main(int argc, char **argv)
 
         try {
             try {
-                SSLServer *server = SSLServer::Listen(5003);
+                SSLConfig serverConf;
+                serverConf.setCertificateFilename("test-certs/server.crt");
+                serverConf.setPrivatekeyFilename("test-certs/server.key");
+                SSLServer *server = SSLServer::Listen(5003, serverConf);
                 std::cerr << "SSL: Server\n";
                 SSLClient *client = (SSLClient*)server->Accept(-1);
                 client->Send("Hello\n", 6);

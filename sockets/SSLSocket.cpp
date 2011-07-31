@@ -313,8 +313,6 @@ TCPSocket *SSLServer::Accept(int timeout)
 
 SSLServer::~SSLServer()
 {
-    SSL_shutdown(m_SSL);
-    // TODO
 }
 
 SSLServer *SSLServer::fromSocket(int sock, const SSLConfig &ctx)

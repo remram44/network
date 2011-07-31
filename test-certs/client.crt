@@ -1,0 +1,66 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 1 (0x1)
+        Signature Algorithm: md5WithRSAEncryption
+        Issuer: C=FR, ST=France, L=Cuers, O=Remram Inc, CN=test CA/emailAddress=remirampin@gmail.com
+        Validity
+            Not Before: Jul 31 09:15:02 2011 GMT
+            Not After : Jul 28 09:15:02 2021 GMT
+        Subject: C=FR, ST=France, O=Remram Inc, CN=test client/emailAddress=remirampin@gmail.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+            RSA Public Key: (1024 bit)
+                Modulus (1024 bit):
+                    00:d2:4f:c1:d1:da:8b:e5:93:d4:24:19:bc:1c:d8:
+                    b7:99:19:d3:14:bf:3c:ec:9c:9b:b6:ae:2a:3a:82:
+                    66:f1:95:86:8e:6e:90:4b:53:e5:18:58:3b:6b:7e:
+                    71:72:d2:e1:6f:84:1f:a3:64:68:8b:6b:b8:a6:83:
+                    88:e0:72:67:1c:df:6c:1b:ad:59:b0:85:eb:9c:53:
+                    d4:da:23:d3:78:b8:8e:43:20:55:1d:d9:50:d3:3d:
+                    48:9d:c8:2c:2b:22:53:43:1b:67:ce:f7:5f:34:41:
+                    98:ae:1f:e2:26:bb:fb:ea:cd:f5:86:0f:6d:1b:33:
+                    fa:c9:09:e0:15:4a:08:1b:8b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Comment: 
+                OpenSSL Generated Certificate
+            X509v3 Subject Key Identifier: 
+                E4:27:AB:84:B5:ED:BC:68:3E:DB:04:37:90:80:6C:CD:0A:1D:27:F2
+            X509v3 Authority Key Identifier: 
+                keyid:23:C1:8C:A4:3E:83:35:00:B2:14:EE:83:29:49:69:8B:10:2F:45:45
+                DirName:/C=FR/ST=France/L=Cuers/O=Remram Inc/CN=test CA/emailAddress=remirampin@gmail.com
+                serial:C3:4D:A2:0E:A2:EC:AA:96
+
+    Signature Algorithm: md5WithRSAEncryption
+        09:99:ae:28:71:be:ad:65:37:df:69:5d:e8:51:b4:f1:c6:c4:
+        41:1e:47:07:ac:c4:1f:4b:96:d6:aa:b8:6a:1f:3f:e5:3e:a5:
+        8e:11:65:d4:fd:74:b8:1c:91:49:41:22:53:13:3a:aa:40:96:
+        0b:38:3a:99:7d:35:90:42:c9:c3:4b:c8:9c:99:68:0a:0b:fe:
+        f5:60:85:97:d0:9b:a4:ec:e5:79:bf:cf:04:ac:2a:1e:6a:b9:
+        69:22:6a:06:0b:a6:30:df:af:43:d3:b2:c9:0d:7a:2f:2f:53:
+        d7:16:5c:c4:5d:e6:18:3c:1a:2b:5d:10:f7:75:c6:bd:b6:40:
+        a2:9b
+-----BEGIN CERTIFICATE-----
+MIIDazCCAtSgAwIBAgIBATANBgkqhkiG9w0BAQQFADB6MQswCQYDVQQGEwJGUjEP
+MA0GA1UECBMGRnJhbmNlMQ4wDAYDVQQHEwVDdWVyczETMBEGA1UEChMKUmVtcmFt
+IEluYzEQMA4GA1UEAxMHdGVzdCBDQTEjMCEGCSqGSIb3DQEJARYUcmVtaXJhbXBp
+bkBnbWFpbC5jb20wHhcNMTEwNzMxMDkxNTAyWhcNMjEwNzI4MDkxNTAyWjBuMQsw
+CQYDVQQGEwJGUjEPMA0GA1UECBMGRnJhbmNlMRMwEQYDVQQKEwpSZW1yYW0gSW5j
+MRQwEgYDVQQDEwt0ZXN0IGNsaWVudDEjMCEGCSqGSIb3DQEJARYUcmVtaXJhbXBp
+bkBnbWFpbC5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANJPwdHai+WT
+1CQZvBzYt5kZ0xS/POycm7auKjqCZvGVho5ukEtT5RhYO2t+cXLS4W+EH6NkaItr
+uKaDiOByZxzfbButWbCF65xT1Noj03i4jkMgVR3ZUNM9SJ3ILCsiU0MbZ873XzRB
+mK4f4ia7++rN9YYPbRsz+skJ4BVKCBuLAgMBAAGjggELMIIBBzAJBgNVHRMEAjAA
+MCwGCWCGSAGG+EIBDQQfFh1PcGVuU1NMIEdlbmVyYXRlZCBDZXJ0aWZpY2F0ZTAd
+BgNVHQ4EFgQU5CerhLXtvGg+2wQ3kIBszQodJ/IwgawGA1UdIwSBpDCBoYAUI8GM
+pD6DNQCyFO6DKUlpixAvRUWhfqR8MHoxCzAJBgNVBAYTAkZSMQ8wDQYDVQQIEwZG
+cmFuY2UxDjAMBgNVBAcTBUN1ZXJzMRMwEQYDVQQKEwpSZW1yYW0gSW5jMRAwDgYD
+VQQDEwd0ZXN0IENBMSMwIQYJKoZIhvcNAQkBFhRyZW1pcmFtcGluQGdtYWlsLmNv
+bYIJAMNNog6i7KqWMA0GCSqGSIb3DQEBBAUAA4GBAAmZrihxvq1lN99pXehRtPHG
+xEEeRwesxB9LltaquGofP+U+pY4RZdT9dLgckUlBIlMTOqpAlgs4Opl9NZBCycNL
+yJyZaAoL/vVghZfQm6Ts5Xm/zwSsKh5quWkiagYLpjDfr0PTsskNei8vU9cWXMRd
+5hg8GitdEPd1xr22QKKb
+-----END CERTIFICATE-----
