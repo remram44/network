@@ -199,15 +199,14 @@ SSLClient::SSLClient(int sock, SSLClient::ERole role, const SSLConfig &ctx)
         if(SSL_connect(m_SSL) < 0)
             throw SSLError("Connect error");
         break;
+    case SSLClient::SERVER_FORCE_CERT:
+        SSL_set_verify(m_SSL,
+                SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+                0);
     case SSLClient::SERVER:
         {
-            int r = SSL_accept(m_SSL);
-        //if(SSL_accept(m_SSL) < 0) FIXME
-            if(r <= 0)
-            {
-                std::cerr << SSL_get_error(m_SSL, r) << "\n";
+            if(SSL_accept(m_SSL) < 0)
                 throw SSLError("Accept error");
-            }
         }
         break;
     }
@@ -263,9 +262,11 @@ bool SSLClient::checkPeerCert() const
 std::string SSLClient::getPeerCertCN() const
 {
     X509 *peer = SSL_get_peer_certificate(m_SSL);
+    if(peer == NULL)
+        return "";
     char peer_CN[256];
     X509_NAME_get_text_by_NID(X509_get_subject_name(peer),
-        NID_commonName, peer_CN, 256);
+            NID_commonName, peer_CN, 256);
     return peer_CN;
 }
 
@@ -307,6 +308,18 @@ TCPSocket *SSLServer::Accept(int timeout)
     TCPSocket *sock = TCPServer::Accept(timeout);
     if(sock == NULL)
         return NULL;
+    else
+        return new SSLClient(Socket::Unlock(sock), SSLClient::SERVER, m_Config);
+}
+
+TCPSocket *SSLServer::Accept(int timeout, bool askForClientCert)
+{
+    TCPSocket *sock = TCPServer::Accept(timeout);
+    if(sock == NULL)
+        return NULL;
+    else if(askForClientCert)
+        return new SSLClient(Socket::Unlock(sock), SSLClient::SERVER_FORCE_CERT,
+                m_Config);
     else
         return new SSLClient(Socket::Unlock(sock), SSLClient::SERVER, m_Config);
 }

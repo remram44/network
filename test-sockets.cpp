@@ -38,40 +38,38 @@ int main(int argc, char **argv)
         try {
             try {
                 TCPServer *server = TCPServer::Listen(5001);
-                std::cerr << "TCP: Mode 1" << std::endl;
+                std::cerr << "TCP: Server" << std::endl;
                 TCPSocket *inc = server->Accept(-1);
-                TCPSocket *out = TCPSocket::Connect("localhost", 5002);
 
                 inc->Send("Hello\n", 6);
                 int len = 0;
                 char rep[8];
                 while(len < 8)
-                    len += out->Recv(rep+len, 8-len);
+                    len += inc->Recv(rep+len, 8-len);
                 rep[7] = '\0';
-                std::cerr << rep << std::endl;
+                std::cerr << "Server received: \"" << rep << "\" "
+                        << ((std::string("Bonjour")==rep)?"[ok]":"[fail]")
+                        << std::endl;
 
                 delete server;
                 delete inc;
-                delete out;
             }
             catch(SocketCantUsePort &e)
             {
-                std::cerr << "TCP: Mode 2" << std::endl;
-                TCPServer *server = TCPServer::Listen(5002);
+                std::cerr << "TCP: Client" << std::endl;
                 TCPSocket *out = TCPSocket::Connect("localhost", 5001);
-                TCPSocket *inc = server->Accept(-1);
 
                 int len = 0;
                 char req[6];
                 while(len < 6)
                     len += out->Recv(req+len, 6-len);
                 req[5] = '\0';
-                std::cerr << req << std::endl;
-                inc->Send("Bonjour", 8);
+                std::cerr << "Client received: \"" << req << "\" "
+                        << ((std::string("Hello")==req)?"[ok]":"[fail]")
+                        << std::endl;
+                out->Send("Bonjour", 8);
 
-                delete server;
                 delete out;
-                delete inc;
 
                 return 0;
             }
@@ -91,17 +89,25 @@ int main(int argc, char **argv)
         SSLSocket::Init();
 
         try {
+            std::cerr << "Connecting to https://linuxfr.org/..." << std::endl;
             SSLClient *conn = SSLClient::Connect("linuxfr.org", 443);
             const std::string req = "HEAD / HTTP/1.1\r\n"
-                "Host: linuxfr.org\r\n\r\n";
+                "Host: linuxfr.org\r\n"
+                "Connection: close\r\n\r\n";
             conn->Send(req.c_str(), req.size());
             char buf[256];
             bool stop = false;
+            bool begun = false;
             do {
                 try {
                     int ret = conn->Recv(buf, 256);
                     buf[ret] = '\0';
-                    std::cout << buf;
+                    if(!begun)
+                    {
+                        std::cerr << "Got response. Header:" << std::endl;
+                        begun = true;
+                    }
+                    std::cerr << buf;
                 }
                 catch(SocketConnectionClosed &e)
                 {
@@ -130,24 +136,68 @@ int main(int argc, char **argv)
                 SSLConfig serverConf;
                 serverConf.setCertificateFilename("test-certs/server.crt");
                 serverConf.setPrivatekeyFilename("test-certs/server.key");
+                serverConf.loadVerifyLocations("test-certs/ca.crt");
                 SSLServer *server = SSLServer::Listen(5003, serverConf);
                 std::cerr << "SSL: Server\n";
-                SSLClient *client = (SSLClient*)server->Accept(-1);
-                client->Send("Hello\n", 6);
-                delete client;
+                int i;
+                for(i = 0; i < 2; ++i)
+                {
+                    SSLClient *client;
+                    if(i == 0)
+                    {
+                        std::cerr << "Not asking for a peer certificate"
+                                << std::endl;
+                        client = (SSLClient*)server->Accept(-1);
+                    }
+                    else /* i == 1 */
+                    {
+                        std::cerr << "Asking for a peer certificate, checking "
+                                "against CA" << std::endl;
+                        client = (SSLClient*)server->Accept(-1, true);
+                    }
+                    std::cerr << "Client connected. checkPeerCert()="
+                            << (client->checkPeerCert()?"true":"false")
+                            << " getPeerCertCN()=\"" << client->getPeerCertCN()
+                            << "\"" << std::endl;
+                    client->Send("Hello\n", 6);
+                    delete client;
+                }
                 delete server;
             }
             catch(SocketCantUsePort &e)
             {
                 std::cerr << "SSL: Client\n";
-                SSLClient *conn = SSLClient::Connect("localhost", 5003);
-                int len = 0;
-                char req[6];
-                while(len < 6)
-                    len += conn->Recv(req+len, 6-len);
-                req[5] = '\0';
-                std::cerr << req << std::endl;
-                delete conn;
+                int i;
+                for(i = 0; i < 2; ++i)
+                {
+                    SSLConfig config;
+                    if(i == 0)
+                        std::cerr << "Not checking peer certificate, not "
+                                "loading our own" << std::endl;
+                    else /* i == 1 */
+                    {
+                        std::cerr << "Checking peer certificate against CA, "
+                                "loading our own" << std::endl;
+                        config.loadVerifyLocations("test-certs/ca.crt");
+                        config.setCertificateFilename("test-certs/client.crt");
+                        config.setPrivatekeyFilename("test-certs/client.key");
+                    }
+                    SSLClient *conn = SSLClient::Connect("localhost", 5003,
+                            config);
+                    std::cerr << "Connected to server. checkPeerCert()="
+                            << (conn->checkPeerCert()?"true":"false")
+                            << " getPeerCertCN()=\"" << conn->getPeerCertCN()
+                            << "\"" << std::endl;
+                    int len = 0;
+                    char req[6];
+                    while(len < 6)
+                        len += conn->Recv(req+len, 6-len);
+                    req[5] = '\0';
+                    std::cerr << "Client received: \"" << req << "\" "
+                            << ((std::string("Hello")==req)?"[ok]":"[fail]")
+                            << std::endl;
+                    delete conn;
+                }
 
                 return 0;
             }

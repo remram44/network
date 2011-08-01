@@ -120,6 +120,8 @@ public:
 
     TCPSocket *Accept(int timeout = 0);
 
+    TCPSocket *Accept(int timeout, bool askForClientCert);
+
 };
 
 class SSLClient : public SSLSocket, public TCPSocket {
@@ -127,7 +129,8 @@ class SSLClient : public SSLSocket, public TCPSocket {
 public:
     enum ERole {
         CLIENT,
-        SERVER
+        SERVER,
+        SERVER_FORCE_CERT
     };
 
 private:
@@ -182,7 +185,10 @@ public:
     ~SSLClient();
 
     /**
-     * Returns the certificate of the other machine.
+     * Checks the certificate of the other machine.
+     *
+     * @warning Will return true if we accepted a client connection without
+     * asking for a certificate!
      */
     bool checkPeerCert() const;
 
@@ -211,6 +217,7 @@ public:
         throw(SocketConnectionClosed);
 
     friend TCPSocket *SSLServer::Accept(int timeout = 0);
+    friend TCPSocket *SSLServer::Accept(int timeout, bool askForClientCert);
 
 };
 
