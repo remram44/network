@@ -257,6 +257,11 @@ public:
 
     Socket *UnderlyingSocket();
 
+    /**
+     * Gets the local port to which this socket is bound, or -1.
+     */
+    int GetLocalPort() const;
+
 };
 
 
@@ -280,7 +285,8 @@ public:
     /**
      * Static method creating a server socket listening on a given port number.
      *
-     * @param port Port number on which to listen for connections.
+     * @param port Port number on which to listen for connections, or 0 for a
+     * random port number.
      */
     static TCPServer *Listen(int port) throw(SocketCantUsePort);
 
@@ -293,6 +299,11 @@ public:
      * to connected after this time.
      */
     virtual TCPSocket *Accept(int timeout = 0);
+
+    /**
+     * Gets the local port to which this socket is bound, or -1.
+     */
+    int GetLocalPort() const;
 
 };
 

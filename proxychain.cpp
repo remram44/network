@@ -4,6 +4,7 @@
 #include "proxy/Socks4Server.h"
 #include "proxy/HTTPServer.h"
 #include "proxy/Forwarder.h"
+#include "proxy/Delayer.h"
 
 #include <iostream>
 #include <string>
@@ -22,6 +23,9 @@ void help(std::ostream &out)
         "  -s4c, --socks4-client <host> <port> <auth>: indicates a SOCKS4 "
         "proxy server.\nThe <auth> string will be sent to the server for "
         "authentification.\n"
+        "  -d, --delay <seconds>: indicates a delayer pseudo-proxy. It will "
+        "delay every\npacket by the specified amount of time, in both "
+        "directions.\n"
         "  -s4s, --socks4-server <port>: creates a local SOCKS4 server, which "
         "will relay\nconnections through all the specified proxies.\n"
         "  -hs, --http-server <port>: creates a local HTTP server.\n"
@@ -90,6 +94,23 @@ int main(int argc, char **argv)
                 }
                 client = new Socks4Client(argv[i+1], port, argv[i+3], client);
                 i += 3;
+            }
+            // Delayer
+            else if(arg == "-d" || arg == "--delay")
+            {
+                if(i+1 >= argc)
+                {
+                    std::cerr << "--delay: missing parameter\n";
+                    return 1;
+                }
+                int delay = fromString<int>(argv[i+1], -1);
+                if(delay <= 0)
+                {
+                    std::cerr << "--delay: invalid time\n";
+                    return 1;
+                }
+                client = new Delayer(delay, client);
+                i++;
             }
             // Help screen
             else if(arg == "-h" || arg == "--help")

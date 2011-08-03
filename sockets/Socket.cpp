@@ -179,6 +179,15 @@ Socket *TCPSocket::UnderlyingSocket()
     return this;
 }
 
+int TCPSocket::GetLocalPort() const
+{
+    struct sockaddr_in address;
+    int size = sizeof(address);
+    if(getsockname(GetSocket(), (struct sockaddr*)&address, &size) < 0)
+        return -1;
+    return ntohs(address.sin_port);
+}
+
 /*============================================================================*/
 
 TCPServer::TCPServer(int sock)
@@ -221,6 +230,15 @@ TCPSocket *TCPServer::Accept(int timeout)
     }
 
     return NULL;
+}
+
+int TCPServer::GetLocalPort() const
+{
+    struct sockaddr_in address;
+    int size = sizeof(address);
+    if(getsockname(GetSocket(), (struct sockaddr*)&address, &size) < 0)
+        return -1;
+    return ntohs(address.sin_port);
 }
 
 /*============================================================================*/

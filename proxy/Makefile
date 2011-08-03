@@ -10,8 +10,8 @@ CPPFLAGS=$(INCLUDES) -g -Wall -O2
 all: ../libproxy.a
 
 # Builds the static library
-../libproxy.a: Proxy.o Socks4Server.o HTTPServer.o Forwarder.o Socks4Client.o HTTPClient.o
-	$(AR) ../libproxy.a Proxy.o Socks4Server.o HTTPServer.o Forwarder.o Socks4Client.o HTTPClient.o
+../libproxy.a: Proxy.o Socks4Server.o HTTPServer.o Forwarder.o Socks4Client.o HTTPClient.o Delayer.o
+	$(AR) ../libproxy.a Proxy.o Socks4Server.o HTTPServer.o Forwarder.o Socks4Client.o HTTPClient.o Delayer.o
 
 # Compile a .cpp into a .o
 %.o: %.cpp
@@ -31,3 +31,5 @@ Forwarder.o: Forwarder.cpp Forwarder.h Proxy.h ../sockets/Socket.h \
 Socks4Client.o: Socks4Client.cpp Socks4Client.h Proxy.h \
  ../sockets/Socket.h
 HTTPClient.o: HTTPClient.cpp HTTPClient.h Proxy.h ../sockets/Socket.h
+Delayer.o: Delayer.cpp Delayer.h Proxy.h ../sockets/Socket.h \
+ ../sockets/DelayedStream.h ../sockets/Socket.h
