@@ -1,10 +1,10 @@
 CPP=g++
 #RM=rm -f
 RM=del /F
-INCLUDES=
+INCLUDES=-I..
 #LIBS=
 LIBS=-lmingw32 -lws2_32
-CPPFLAGS = $(INCLUDE) -g -Wall -O2
+CPPFLAGS=$(INCLUDES) -g -Wall -O2
 
 .PHONY: all clean
 

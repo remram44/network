@@ -3,7 +3,7 @@ CPP=g++
 RM=del /F
 AR=ar rcs
 INCLUDES=
-CPPFLAGS = $(INCLUDE) -g -Wall -O2
+CPPFLAGS=$(INCLUDES) -g -Wall -O2
 
 .PHONY: all clean
 
@@ -21,5 +21,5 @@ all: ../libsockets.a
 clean:
 	$(RM) *.o
 
-Socket.o: Socket.h
-SSLSocket.o: SSLSocket.h Socket.h
+Socket.o: Socket.cpp Socket.h
+SSLSocket.o: SSLSocket.cpp SSLSocket.h Socket.h

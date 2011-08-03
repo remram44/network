@@ -1,9 +1,9 @@
 CPP=g++
 #RM=rm -f
 RM=del /F
-INCLUDES=
+INCLUDES=-I.
 LIBS=-lmingw32 -lws2_32 -leay32 -lssleay32
-CPPFLAGS = $(INCLUDE) -g -Wall -O2
+CPPFLAGS = $(INCLUDES) -g -Wall -O2
 MAKE=make
 
 .PHONY: all sockets proxy engine clean
@@ -24,7 +24,7 @@ test-sockets.exe: sockets test-sockets.o
 	$(CPP) -o $@ test-sockets.o -L. -lsockets $(LIBS)
 
 proxychain.exe: sockets proxy proxychain.o
-	$(CPP) -o $@ proxychain.o -L. -lsockets -lproxy $(LIBS)
+	$(CPP) -o $@ proxychain.o -L. -lproxy -lsockets $(LIBS)
 
 clean:
 	$(RM) libsockets.a libproxy.a
