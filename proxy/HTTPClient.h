@@ -36,7 +36,7 @@ private:
 
 public:
     HTTPStream(NetStream *s);
-    virtual ~HTTPStream() {}
+    ~HTTPStream();
     virtual void Send(const char *data, size_t size)
         throw(SocketConnectionClosed);
     virtual int Recv(char *data, size_t max, bool bWait = true)

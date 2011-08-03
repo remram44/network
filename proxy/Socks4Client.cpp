@@ -82,6 +82,11 @@ Socks4Stream::Socks4Stream(NetStream *s)
 {
 }
 
+Socks4Stream::~Socks4Stream()
+{
+    delete m_pStream;
+}
+
 void Socks4Stream::Send(const char *data, size_t size)
     throw(SocketConnectionClosed)
 {

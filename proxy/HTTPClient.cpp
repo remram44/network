@@ -37,6 +37,11 @@ HTTPStream::HTTPStream(NetStream *s)
 {
 }
 
+HTTPStream::~HTTPStream()
+{
+    delete m_pStream;
+}
+
 void HTTPStream::Send(const char *data, size_t size)
     throw(SocketConnectionClosed)
 {
