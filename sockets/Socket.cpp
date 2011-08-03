@@ -129,21 +129,21 @@ TCPSocket *TCPSocket::Connect(const char *host, int port)
     TCPSocket *sock = new TCPSocket(socket(AF_INET, SOCK_STREAM, 0));
 
     // Hostname resolution
-    struct sockaddr_in adresse;
+    struct sockaddr_in address;
     struct hostent* h = gethostbyname(host);
     if(h == NULL)
     {
         throw SocketUnknownHost();
     }
 
-    adresse.sin_family = AF_INET;
-    adresse.sin_addr = *((struct in_addr *)h->h_addr);
-    adresse.sin_port = htons(port);
+    address.sin_family = AF_INET;
+    address.sin_addr = *((struct in_addr *)h->h_addr);
+    address.sin_port = htons(port);
 
-    memset(&(adresse.sin_zero), 0, 8);
+    memset(&(address.sin_zero), 0, 8);
 
-    if(connect(sock->GetSocket(), (struct sockaddr*)&adresse,
-        sizeof(adresse)) == -1)
+    if(connect(sock->GetSocket(), (struct sockaddr*)&address,
+        sizeof(address)) == -1)
     {
         throw SocketConnectionRefused();
     }

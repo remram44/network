@@ -101,7 +101,7 @@ void Socks4Server::update(bool bWait)
 #ifdef _DEBUG
                     std::cerr << " request is complete\n";
 #endif
-                    std::string hote;
+                    std::string host;
                     std::string missing;
                     if(!v4a)
                     {
@@ -112,12 +112,12 @@ void Socks4Server::update(bool bWait)
                             << (int)ureq[5] << '.'
                             << (int)ureq[6] << '.'
                             << (int)ureq[7];
-                        hote = oss.str();
+                        host = oss.str();
                         missing = c->request.substr(i+1);
                     }
                     else
                     {
-                        hote = c->request.substr(i+1, j-i-1);
+                        host = c->request.substr(i+1, j-i-1);
                         missing = c->request.substr(j+1);
                     }
                     int port;
@@ -129,11 +129,11 @@ void Socks4Server::update(bool bWait)
                     // Establishes the connection
                     c->request = "";
 #ifdef _DEBUG
-                    std::cerr << "Socks4Server: proxy.Connect(" << hote << ", "
+                    std::cerr << "Socks4Server: proxy.Connect(" << host << ", "
                         << port << ")...";
 #endif
                     try {
-                        c->stream = m_pProxy->Connect(hote.c_str(), port);
+                        c->stream = m_pProxy->Connect(host.c_str(), port);
                     }
                     // FIXME : other exceptions?
                     catch(SocketError &e)
@@ -149,7 +149,7 @@ void Socks4Server::update(bool bWait)
 #endif
                     cl->Send("\x00\x5a" "\0\0", 4);
                     // In every case, send the IPv4 address we reached
-                    const unsigned char *ip = Socket::Resolve(hote.c_str());
+                    const unsigned char *ip = Socket::Resolve(host.c_str());
                     cl->Send(ip?(const char*)ip:"\0\0\0\0", 4);
                     // We add it to the SocketSet, and we store the pair
                     // NetStream => TCPSocket

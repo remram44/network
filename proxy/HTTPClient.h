@@ -15,9 +15,9 @@ private:
     int m_iPort;
 
 public:
-    HTTPClient(const char *hote, int port, Proxy *proxy = NULL);
+    HTTPClient(const char *host, int port, Proxy *proxy = NULL);
     virtual ~HTTPClient() {}
-    virtual NetStream *Connect(const char *hote, int port);
+    virtual NetStream *Connect(const char *host, int port);
     
 };
 

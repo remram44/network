@@ -3,16 +3,16 @@
 #include <sstream>
 #include <iostream>
 
-Socks4Client::Socks4Client(const char *hote, int port, const char *auth,
+Socks4Client::Socks4Client(const char *host, int port, const char *auth,
     Proxy *proxy)
-  : m_pProxy(proxy), m_sHost(hote), m_iPort(port), m_sAuth(auth),
+  : m_pProxy(proxy), m_sHost(host), m_iPort(port), m_sAuth(auth),
     m_eV4A(Socks4Client::FALLBACK)
 {
     if(m_pProxy == NULL)
         m_pProxy = new TCPClient;
 }
 
-NetStream *Socks4Client::Connect(const char *hote, int port)
+NetStream *Socks4Client::Connect(const char *host, int port)
 {
     Socks4Client::EV4A eV4A = m_eV4A;
 #ifdef _DEBUG
@@ -31,7 +31,7 @@ NetStream *Socks4Client::Connect(const char *hote, int port)
     if(eV4A != Socks4Client::DO_USE)
     {
         // Attempts to resolve the hostname locally
-        const unsigned char *ip = Socket::Resolve(hote);
+        const unsigned char *ip = Socket::Resolve(host);
         if(ip == NULL)
         {
             if(eV4A == Socks4Client::FALLBACK)
@@ -69,7 +69,7 @@ NetStream *Socks4Client::Connect(const char *hote, int port)
     s->Send((char*)req, 8);
     s->Send(m_sAuth.c_str(), m_sAuth.size() + 1); // auth, null-terminated
     if(eV4A == Socks4Client::DO_USE)
-        s->Send(hote, strlen(hote) + 1); // hostname, null-terminated
+        s->Send(host, strlen(host) + 1); // hostname, null-terminated
 #ifdef _DEBUG
     std::cerr << " ok\n";
 #endif

@@ -12,7 +12,7 @@
 class Proxy {
 
 public:
-    virtual NetStream *Connect(const char *hote, int port) = 0;
+    virtual NetStream *Connect(const char *host, int port) = 0;
 
 };
 
@@ -25,7 +25,7 @@ public:
 class TCPClient : public Proxy {
 
 public:
-    virtual NetStream *Connect(const char *hote, int port);
+    virtual NetStream *Connect(const char *host, int port);
 
 };
 

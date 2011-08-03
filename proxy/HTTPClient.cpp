@@ -3,14 +3,14 @@
 #include <sstream>
 #include <iostream>
 
-HTTPClient::HTTPClient(const char *hote, int port, Proxy *proxy)
-  : m_pProxy(proxy), m_sHost(hote), m_iPort(port)
+HTTPClient::HTTPClient(const char *host, int port, Proxy *proxy)
+  : m_pProxy(proxy), m_sHost(host), m_iPort(port)
 {
     if(m_pProxy == NULL)
         m_pProxy = new TCPClient;
 }
 
-NetStream *HTTPClient::Connect(const char *hote, int port)
+NetStream *HTTPClient::Connect(const char *host, int port)
 {
 #ifdef _DEBUG
     std::cerr << "HTTPClient: connection...";
@@ -23,7 +23,7 @@ NetStream *HTTPClient::Connect(const char *hote, int port)
 #ifdef _DEBUG
     std::cerr << "HTTPClient: forwarding request...";
 #endif
-    oss << "CONNECT " << hote << ":" << port << " HTTP/1.0\n\n";
+    oss << "CONNECT " << host << ":" << port << " HTTP/1.0\n\n";
     s->Send(oss.str().c_str(), oss.str().size());
 #ifdef _DEBUG
     std::cerr << " ok\n";
