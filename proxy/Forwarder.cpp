@@ -40,14 +40,13 @@ void Forwarder::update(bool bWait)
         if(cl)
         {
             try {
-                Client *c = new Client;
-                c->stream = m_pProxy->Connect(m_sTargetHost.c_str(),
+                NetStream *stream = m_pProxy->Connect(m_sTargetHost.c_str(),
                     m_iTargetPort);
-                m_aConnections[cl] = c;
+                m_aConnections[cl] = stream;
                 m_Set.AddSocket(cl);
                 // We add it to the SocketSet, and we store the pair
                 // NetStream => TCPSocket
-                Socket *ul = c->stream->UnderlyingSocket();
+                Socket *ul = stream->UnderlyingSocket();
                 m_Set.AddSocket(ul);
                 m_aNetStream2Client[ul] = cl;
 #ifdef _DEBUG
@@ -78,7 +77,7 @@ void Forwarder::update(bool bWait)
 #endif
         TCPSocket *cl = (TCPSocket*)sock;
         try {
-            Client *c = m_aConnections[cl];
+            NetStream *stream = m_aConnections[cl];
             static char buf[1024];
             int r = cl->Recv(buf, 1024, false);
             if(r <= 0)
@@ -87,16 +86,16 @@ void Forwarder::update(bool bWait)
 #ifdef _DEBUG
             std::cerr << " forward (" << r << ")\n";
 #endif
-            c->stream->Send(buf, r);
+            stream->Send(buf, r);
         }
         catch(SocketConnectionClosed &e)
         {
-            if(m_aConnections[cl]->stream)
+            if(m_aConnections[cl])
             {
-                Socket *ul = m_aConnections[cl]->stream->UnderlyingSocket();
+                Socket *ul = m_aConnections[cl]->UnderlyingSocket();
                 m_Set.RemoveSocket(ul);
                 m_aNetStream2Client.erase(ul);
-                delete m_aConnections[cl]->stream;
+                delete m_aConnections[cl];
             }
             m_aConnections.erase(cl);
             m_Set.RemoveSocket(cl);
@@ -119,7 +118,7 @@ void Forwarder::update(bool bWait)
             TCPSocket *cl = it->second;
             try {
                 static char buf[1024];
-                int r = m_aConnections[cl]->stream->Recv(buf, 1024, false);
+                int r = m_aConnections[cl]->Recv(buf, 1024, false);
                 // Dump copy
                 if(r > 0)
                 {
@@ -132,8 +131,8 @@ void Forwarder::update(bool bWait)
             catch(SocketConnectionClosed &e)
             {
                 m_aNetStream2Client.erase(sock);
-                if(m_aConnections[cl]->stream)
-                    delete m_aConnections[cl]->stream;
+                if(m_aConnections[cl])
+                    delete m_aConnections[cl];
                 m_aConnections.erase(cl);
                 m_Set.RemoveSocket(cl);
                 m_Set.RemoveSocket(sock);

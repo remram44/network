@@ -8,16 +8,11 @@
 
 class Forwarder : public ProxyServer {
 
-public:
-    struct Client {
-        NetStream *stream;
-    };
-
 private:
     Proxy *m_pProxy;
     TCPServer *m_pSock;
     // Socket connected to the client => NetStream
-    std::map<TCPSocket*, Client*> m_aConnections;
+    std::map<TCPSocket*, NetStream*> m_aConnections;
     // SocketSet containing the server socket m_pSock, the incoming connections
     // to the clients and the sockets in the NetStream objects
     SocketSet m_Set;
