@@ -10,8 +10,8 @@ CPPFLAGS=$(INCLUDES) -g -Wall -O2
 all: ../libsockets.a
 
 # Builds the static library
-../libsockets.a: Socket.o SSLSocket.o DelayedStream.o
-	$(AR) ../libsockets.a Socket.o SSLSocket.o DelayedStream.o
+../libsockets.a: Socket.o TCP.o SSLSocket.o DelayedStream.o
+	$(AR) ../libsockets.a Socket.o TCP.o SSLSocket.o DelayedStream.o
 
 # Compile a .cpp into a .o
 %.o: %.cpp
@@ -21,6 +21,7 @@ all: ../libsockets.a
 clean:
 	$(RM) *.o
 
-Socket.o: Socket.h
-SSLSocket.o: SSLSocket.h Socket.h
-DelayedStream.o: DelayedStream.h Socket.h
+Socket.o: Socket.cpp Socket.h
+TCP.o: TCP.cpp TCP.h Socket.h
+SSLSocket.o: SSLSocket.cpp SSLSocket.h Socket.h TCP.h
+DelayedStream.o: DelayedStream.cpp DelayedStream.h Socket.h TCP.h

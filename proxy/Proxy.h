@@ -2,6 +2,7 @@
 #define PROXY_H
 
 #include "sockets/Socket.h"
+#include "sockets/TCP.h"
 
 /**
  * A proxy, through which we can establish a connection.

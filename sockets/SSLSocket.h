@@ -2,6 +2,7 @@
 #define SSLSOCKET_H
 
 #include "Socket.h"
+#include "TCP.h"
 
 #include <string>
 

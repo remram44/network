@@ -2,6 +2,7 @@
 #define DELAYEDSTREAM_H
 
 #include "Socket.h"
+#include "TCP.h"
 #include <pthread.h>
 
 class DelayedStream : public NetStream {

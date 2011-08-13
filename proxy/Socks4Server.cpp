@@ -89,7 +89,7 @@ void Socks4Server::update(bool bWait)
                 }
                 bool v4a = (c->request[4] == 0x00) && (c->request[5] == 0x00)
                     && (c->request[6] == 0x00) && (c->request[7] != 0x00);
-                size_t i, j;
+                size_t i, j = 0; // Avoids "j may be used uninitialized" warning
                 i = c->request.find('\0', 8);
                 // If we received the authentification string and we are not
                 // using v4a or we have received the hostname as well
