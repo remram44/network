@@ -7,7 +7,7 @@ HTTPClient::HTTPClient(const char *host, int port, Proxy *proxy)
   : m_pProxy(proxy), m_sHost(host), m_iPort(port)
 {
     if(m_pProxy == NULL)
-        m_pProxy = new TCPClient;
+        m_pProxy = TCPClient::getInstance();
 }
 
 NetStream *HTTPClient::Connect(const char *host, int port)

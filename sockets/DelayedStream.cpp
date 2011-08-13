@@ -67,7 +67,7 @@ void DelayedStream::run()
         for(;;)
         {
             Socket *sock;
-            if(queue.size() > 0)
+            if(!queue.empty())
             {
                 std::list<Event>::iterator it = queue.begin();
                 time_t nextEvent = it->when;

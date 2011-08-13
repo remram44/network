@@ -19,12 +19,24 @@ public:
 /**
  * A stub proxy: direct TCP connection.
  *
- * An object of this class is created by objects which need to establish a
- * connection if no proxy object is explicitly given.
+ * This class is a very simple implementation of the Proxy interface, used by
+ * objects that need to establish a connection when no proxy object is
+ * explicitly given.
+ * It can be used instead of a real Proxy instance to unify connection methods.
+ *
+ * The unique instance of this class can be accessed through
+ * TCPClient::getInstance().
  */
 class TCPClient : public Proxy {
 
+private:
+    static TCPClient *instance;
+
+private:
+    TCPClient() {}
+
 public:
+    static TCPClient *getInstance();
     virtual NetStream *Connect(const char *host, int port);
 
 };

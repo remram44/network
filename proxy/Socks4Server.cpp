@@ -11,7 +11,7 @@ Socks4Server::Socks4Server(int port, Proxy *proxy)
 #endif
     if(m_pProxy == NULL)
     {
-        m_pProxy = new TCPClient;
+        m_pProxy = TCPClient::getInstance();
 #ifdef _DEBUG
         std::cerr << " using direct TCP connection mode...";
 #endif

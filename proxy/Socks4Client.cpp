@@ -9,7 +9,7 @@ Socks4Client::Socks4Client(const char *host, int port, const char *auth,
     m_eV4A(Socks4Client::FALLBACK)
 {
     if(m_pProxy == NULL)
-        m_pProxy = new TCPClient;
+        m_pProxy = TCPClient::getInstance();
 }
 
 NetStream *Socks4Client::Connect(const char *host, int port)

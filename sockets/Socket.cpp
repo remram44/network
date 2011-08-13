@@ -287,7 +287,7 @@ Socket *SocketSet::Wait(int timeout)
         if((*it)->GetSocket() > greatest)
             greatest = (*it)->GetSocket();
         FD_SET((SOCKET)(*it)->GetSocket(), &fds);
-        it++;
+        ++it;
     }
 
     if(greatest == -1)
@@ -311,7 +311,7 @@ Socket *SocketSet::Wait(int timeout)
         if(FD_ISSET((*it)->GetSocket(), &fds))
             return *it;
         else
-            it++;
+            ++it;
     }
 
     return NULL;

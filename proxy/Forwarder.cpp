@@ -12,7 +12,7 @@ Forwarder::Forwarder(int port, const std::string &target_host, int target_port,
 #endif
     if(m_pProxy == NULL)
     {
-        m_pProxy = new TCPClient;
+        m_pProxy = TCPClient::getInstance();
 #ifdef _DEBUG
         std::cerr << " using direct TCP connection mode...";
 #endif
