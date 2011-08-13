@@ -2,6 +2,7 @@ CPP=g++
 #RM=rm -f
 RM=del /F
 INCLUDES=-I.
+#LIBS=-lssl -lpthread
 LIBS=-lmingw32 -lws2_32 -leay32 -lssleay32 -lpthread
 CPPFLAGS = $(INCLUDES) -g -Wall -O2
 MAKE=make

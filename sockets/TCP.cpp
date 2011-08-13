@@ -64,7 +64,7 @@ Socket *TCPSocket::UnderlyingSocket()
 int TCPSocket::GetLocalPort() const
 {
     struct sockaddr_in address;
-    int size = sizeof(address);
+    socklen_t size = sizeof(address);
     if(getsockname(GetSocket(), (struct sockaddr*)&address, &size) < 0)
         return -1;
     return ntohs(address.sin_port);
@@ -117,7 +117,7 @@ TCPSocket *TCPServer::Accept(int timeout)
 int TCPServer::GetLocalPort() const
 {
     struct sockaddr_in address;
-    int size = sizeof(address);
+    socklen_t size = sizeof(address);
     if(getsockname(GetSocket(), (struct sockaddr*)&address, &size) < 0)
         return -1;
     return ntohs(address.sin_port);
