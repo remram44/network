@@ -31,6 +31,15 @@ public:
         throw(SocketUnknownHost, SocketConnectionRefused);
 
     /**
+     * Static method establishing a new connection.
+     *
+     * @param dest Destination address.
+     * @param port Port number on which to connect.
+     */
+    static TCPSocket *Connect(const SockAddress *dest, int port)
+        throw(SocketConnectionRefused);
+
+    /**
      * Sends data.
      *
      * @param data Raw data to send.

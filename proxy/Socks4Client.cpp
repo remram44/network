@@ -31,7 +31,8 @@ NetStream *Socks4Client::Connect(const char *host, int port)
     if(eV4A != Socks4Client::DO_USE)
     {
         // Attempts to resolve the hostname locally
-        const unsigned char *ip = Socket::Resolve(host);
+        const SockAddress4 *ip =
+                (SockAddress4*)Socket::Resolve(host, SockAddress::V4);
         if(ip == NULL)
         {
             if(eV4A == Socks4Client::FALLBACK)
@@ -54,7 +55,8 @@ NetStream *Socks4Client::Connect(const char *host, int port)
 #ifdef _DEBUG
             std::cerr << " DNS resolution ok...";
 #endif
-            req[4] = ip[0]; req[5] = ip[1]; req[6] = ip[2]; req[7] = ip[3];
+            req[4] = ip->a; req[5] = ip->b; req[6] = ip->c; req[7] = ip->d;
+            delete ip;
         }
     }
     if(eV4A == Socks4Client::DO_USE)

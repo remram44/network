@@ -149,8 +149,17 @@ void Socks4Server::update(bool bWait)
 #endif
                     cl->Send("\x00\x5a" "\0\0", 4);
                     // In every case, send the IPv4 address we reached
-                    const unsigned char *ip = Socket::Resolve(host.c_str());
-                    cl->Send(ip?(const char*)ip:"\0\0\0\0", 4);
+                    const SockAddress4 *ip =
+                            (SockAddress4*)Socket::Resolve(host.c_str(),
+                            SockAddress::V4);
+                    if(ip != NULL)
+                    {
+                        unsigned int address = htonl(ip->toUint());
+                        cl->Send((const char*)&address, 4);
+                        delete ip;
+                    }
+                    else
+                        cl->Send("\0\0\0\0", 4);
                     // We add it to the SocketSet, and we store the pair
                     // NetStream => TCPSocket
                     Socket *ul = c->stream->UnderlyingSocket();

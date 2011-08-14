@@ -100,6 +100,49 @@ public:
 
 /*============================================================================*/
 
+
+/**
+ * An address on the network.
+ */
+class SockAddress {
+
+public:
+    enum EType {
+        V4 = 0x01,
+        V6 = 0x02,
+
+        ANY_TYPE = V4 | V6
+    };
+
+    virtual EType type() const = 0;
+
+};
+
+/**
+ * An IPv4 address.
+ */
+class SockAddress4 : public SockAddress {
+
+public:
+    unsigned char a, b, c, d;
+
+public:
+    SockAddress4(unsigned int address);
+    SockAddress4(unsigned char a, unsigned char b, unsigned char c,
+            unsigned char d);
+
+    /**
+     * Returns the address as a single unsigned integer, in host byte order.
+     */
+    unsigned int toUint() const;
+
+    SockAddress::EType type() const;
+
+};
+
+
+/*============================================================================*/
+
 /**
  * A socket.
  *
@@ -148,7 +191,8 @@ public:
     /**
      * Resolves a hostname and returns the 4 bytes of its IPv4 address.
      */
-    static const unsigned char *Resolve(const char *name);
+    static const SockAddress *Resolve(const char *name,
+            unsigned int types = SockAddress::ANY_TYPE);
 
 public:
     /**

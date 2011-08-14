@@ -25,6 +25,31 @@ const char *SocketCantUsePort::what()
     return "Can't use port";
 }
 
+
+/*============================================================================*/
+
+SockAddress4::SockAddress4(unsigned int address)
+  : a(address >> 24), b(address >> 16), c(address >> 8), d(address)
+{
+}
+
+SockAddress4::SockAddress4(unsigned char a_, unsigned char b_, unsigned char c_,
+        unsigned char d_)
+  : a(a_), b(b_), c(c_), d(d_)
+{
+}
+
+unsigned int SockAddress4::toUint() const
+{
+    return (a << 24) | (b << 16) | (c << 8) | d;
+}
+
+SockAddress::EType SockAddress4::type() const
+{
+    return SockAddress::V4;
+}
+
+
 /*============================================================================*/
 
 Socket::Socket(int sock)
@@ -103,18 +128,21 @@ int Socket::Unlock(Socket *s)
 }
 
 // FIXME : to be updated (IPv6, ...)
-const unsigned char *Socket::Resolve(const char *name)
+const SockAddress *Socket::Resolve(const char *name, unsigned int types)
 {
+    if(!(types & SockAddress::V4))
+        return NULL;
     struct hostent *h = gethostbyname(name);
     if(h == NULL)
         return NULL;
     else
     {
-        static unsigned char buf[4];
-        memcpy(buf, h->h_addr, sizeof(struct in_addr));
-        return buf;
+        unsigned int buf;
+        memcpy(&buf, h->h_addr, sizeof(struct in_addr));
+        return new SockAddress4(ntohl(buf));
     }
 }
+
 
 /*============================================================================*/
 

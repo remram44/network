@@ -5,6 +5,30 @@ TCPSocket::TCPSocket(int sock)
 {
 }
 
+TCPSocket *TCPSocket::Connect(const SockAddress *dest, int port)
+    throw(SocketConnectionRefused)
+{
+    if(dest->type() != SockAddress::V4)
+        throw SocketConnectionRefused();
+
+    TCPSocket *sock = new TCPSocket(socket(AF_INET, SOCK_STREAM, 0));
+
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl(((SockAddress4*)dest)->toUint());
+    address.sin_port = htons(port);
+
+    memset(&(address.sin_zero), 0, 8);
+
+    if(connect(sock->GetSocket(), (struct sockaddr*)&address,
+        sizeof(address)) == -1)
+    {
+        throw SocketConnectionRefused();
+    }
+
+    return sock;
+}
+
 TCPSocket *TCPSocket::Connect(const char *host, int port)
     throw(SocketUnknownHost, SocketConnectionRefused)
 {
