@@ -100,7 +100,6 @@ public:
 
 /*============================================================================*/
 
-
 /**
  * An address on the network.
  */
@@ -115,6 +114,7 @@ public:
     };
 
     virtual EType type() const = 0;
+    virtual SockAddress *clone() const = 0;
 
 };
 
@@ -137,6 +137,8 @@ public:
     unsigned int toUint() const;
 
     SockAddress::EType type() const;
+
+    SockAddress *clone() const;
 
 };
 

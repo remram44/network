@@ -1,5 +1,7 @@
 #include "sockets/Socket.h"
+#include "sockets/TCP.h"
 #include "sockets/SSLSocket.h"
+#include "sockets/UDP.h"
 
 #include <iostream>
 
@@ -7,7 +9,7 @@ int main(int argc, char **argv)
 {
     Socket::Init();
 
-    bool do_tcp = false, do_https = false, do_ssl = false;
+    bool do_tcp = false, do_https = false, do_ssl = false, do_udp;
 
     if(argc > 1)
     {
@@ -21,10 +23,12 @@ int main(int argc, char **argv)
                 do_https = true;
             else if(arg == "ssl")
                 do_ssl = true;
+            else if(arg == "udp")
+                do_udp = true;
             else
             {
                 std::cerr << "Parameter \"" << arg << "\" was not understood.\n"
-                    "Recognized commands are: tcp, https, ssl\n";
+                    "Recognized commands are: tcp, https, ssl, udp\n";
                 return 1;
             }
             argv++;
@@ -210,6 +214,58 @@ int main(int argc, char **argv)
         }
 
         std::cerr << "\nSSL testing finished\n";
+    }
+
+    if(do_udp)
+    {
+        try {
+            try {
+                UDPSocket *server = new UDPSocket(5001);
+                std::cerr << "UDP: Server" << std::endl;
+
+                UDPPacket packet;
+                server->recvPacket(packet, true);
+                if(packet[packet.size()-1] == '\n')
+                {
+                    packet[packet.size()-1] = '\0';
+                    SockAddress4 *address = (SockAddress4*)packet.getAddress();
+                    std::cerr << "Server received from "
+                            << (int)address->a << "." << (int)address->b << "."
+                            << (int)address->c << "." << (int)address->d << ":"
+                            << (int)packet.getPort()
+                            << ": \"" << packet.c_str() << "\""
+                            << std::endl;
+                }
+
+                delete server;
+            }
+            catch(SocketCantUsePort &e)
+            {
+                std::cerr << "UDP: Client" << std::endl;
+                UDPSocket *client = new UDPSocket();
+
+                UDPPacket packet((const unsigned char*)"Test\n", 5);
+                {
+                    const SockAddress *address = Socket::Resolve("localhost");
+                    packet.setAddress(address);
+                    delete address;
+                }
+                packet.setPort(5001);
+                client->sendPacket(packet);
+
+                delete client;
+
+                return 0;
+            }
+        }
+        catch(SocketError &e)
+        {
+            std::cerr << "UDP: Oops!" << std::endl;
+            std::cerr << e.what() << std::endl;
+            return 1;
+        }
+
+        std::cerr << "\nUDP testing finished\n\n";
     }
 
     return 0;

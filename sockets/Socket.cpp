@@ -49,6 +49,11 @@ SockAddress::EType SockAddress4::type() const
     return SockAddress::V4;
 }
 
+SockAddress *SockAddress4::clone() const
+{
+    return new SockAddress4(a, b, c, d);
+}
+
 
 /*============================================================================*/
 
