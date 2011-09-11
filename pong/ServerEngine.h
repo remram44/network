@@ -2,6 +2,7 @@
 #define SERVERENGINE_H
 
 #include "engine/NetServer.h"
+
 #include "GameEngine.h"
 
 class ServerEngine : public GameEngine, public NetServer {

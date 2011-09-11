@@ -1,11 +1,11 @@
 #ifndef GAMEENGINE_H
 #define GAMEENGINE_H
 
-#include "engine/Net.h"
-#include <set>
-
 #include "MovingRect.h"
-#include "Racket.h"
+
+#include "engine/Net.h"
+#include <SDL/SDL.h>
+#include <set>
 
 #define PONG_NAME "Networked Pong Application"
 #define PONG_NET_NAME "NETWORKED_PONG"
@@ -25,9 +25,15 @@ public:
         ROLE_CLIENT
     };
 
+    enum EKey {
+        KEY_UP,
+        KEY_DOWN
+    };
+
 private:
     ERole m_eRole;
     bool m_bDisplay;
+    SDL_Surface *m_pScreen;
     std::set<MovingRect*> m_Rects;
     Racket *m_Rackets[2];
     MovingRect *m_pBall;
@@ -39,9 +45,12 @@ private:
 
 public:
     GameEngine(ERole role, bool display);
+    void initVideo();
     void setup();
     void mainLoop();
     void tick();
+
+    virtual void input(EKey key, bool pressed) = 0;
 
 };
 

@@ -1,8 +1,9 @@
 #ifndef CLIENTENGINE_H
 #define CLIENTENGINE_H
 
-#include "engine/NetClient.h"
 #include "GameEngine.h"
+
+#include "engine/NetClient.h"
 
 class ClientEngine : public GameEngine, public NetClient {
 
@@ -14,6 +15,7 @@ public:
     void run();
     void stateChanged(NetClient::EState state);
     void handleServerMessage(const Msg::Data &data);
+    void input(EKey key, bool pressed);
 
 };
 

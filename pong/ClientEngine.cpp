@@ -86,3 +86,26 @@ void ClientEngine::stateChanged(NetClient::State *state)
         break;
     }
 }
+
+void ClientEngine::handleServerMessage(const Msg::Data &data)
+{
+    // Nothing to see here
+}
+
+void ClientEngine::input(EKey key, bool pressed)
+{
+    if(pressed)
+    {
+        switch(key)
+        {
+        case KEY_UP:
+            sendClientMsg(Msg::Data("\x01"));
+            break;
+        case KEY_DOWN:
+            sendClientMsg(Msg::Data("\x02"));
+            break;
+        }
+    }
+    else
+        sendClientMsg(Msg::Data("\x00"));
+}

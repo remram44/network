@@ -11,15 +11,21 @@ GameEngine::GameEngine(ERole role, bool display)
     m_pBall = NULL;
 }
 
+void GameEngine::initVideo()
+{
+    SDL_Init(SDL_INIT_VIDEO);
+    m_pScreen = SDL_SetVideoMode(640, 480, 32, SDL_HWSURFACE|SDL_DOUBLEBUF);
+}
+
 void GameEngine::setup()
 {
-    m_Rackets[0] = new Racket(this);
+    m_Rackets[0] = new MovingRect(this);
     m_Rackets[0]->x = 20.f; m_Rackets[0]->y = 20.f;
     m_Rackets[0]->w = 20; m_Rackets[0]->h = 100;
     m_Rackets[0]->vx = 0.f; m_Rackets[0]->vy = 0.f;
     m_Rackets[0]->r = 127; m_Rackets[0]->g = 127; m_Rackets[0]->b = 127;
 
-    m_Rackets[1] = new Racket(this);
+    m_Rackets[1] = new MovingRect(this);
     m_Rackets[1]->x = 600.f; m_Rackets[1]->y = 20.f;
     m_Rackets[1]->w = 20; m_Rackets[1]->h = 100;
     m_Rackets[1]->vx = 0.f; m_Rackets[1]->vy = 0.f;
@@ -49,9 +55,52 @@ void GameEngine::mainLoop()
             }
         }
 
-        // TODO : Input
+        // Keyboard input
+        {
+            SDL_Event event;
+            while(SDL_PollEvent(&event))
+            {
+                if(event.type == SDL_QUIT)
+                {
+                    shutdown();
+                    return ;
+                }
+                else if(m_pLocalRacket == NULL)
+                    ; // On ne contrôle rien...
+                else if(event.type == SDL_KEYDOWN
+                 || event.type == SDL_KEYUP)
+                {
+                    bool pressed = event.type == SDL_KEYDOWN;
+                    switch(event.key.keysym.sym)
+                    {
+                    case SDLK_UP:
+                        input(KEY_UP, pressed);
+                        break;
+                    case SDLK_DOWN:
+                        input(KEY_DOWN, pressed);
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
 
-        // TODO : Display
+        // Graphical display
+        if(m_bDisplay)
+        {
+            SDL_FillRect(m_pScreen, NULL,
+                    SDL_MapRGB(m_pScreen->format, 0, 0, 0));
+            std::set<MovingRect*>::iterator rect = m_Rects.begin();
+            for(; it != m_Rects.end(); ++rect)
+            {
+                SDL_Rect r = {(int)(*rect)->x, (int)(*rect)->y,
+                        (*rect)->w, (*rect)->h};
+                SDL_FillRect(m_pScreen, &r, SDL_MapRGB(m_pScreen->format,
+                        (*rect)->r, (*rect)->g, (*rect)->b));
+            }
+            SDL_Flip(m_pScreen);
+        }
     }
 }
 
