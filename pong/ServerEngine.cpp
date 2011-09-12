@@ -2,13 +2,13 @@
 
 ServerEngine::ServerEngine(bool dedicated, int port)
   : GameEngine(GameEngine::ROLE_AUTHORITY, !dedicated),
-    NetServer(version(), port)
+    NetServer(version(), port), m_bDedicated(dedicated)
 {
 }
 
 void ServerEngine::run()
 {
-    if(!isDedicated())
+    if(!m_bDedicated)
         initVideo();
     setup();
     mainLoop();
@@ -18,16 +18,17 @@ void ServerEngine::clientConnecting(ConnectedClient *client)
 {
     // Compare versions
     Msg::Data client_str = client->getClientVersion();
-    const unsigned int server = (PONG_VERSION_MAJOR << 16) | PONG_VERSION_MINOR;
+    const unsigned int vserver =
+            (PONG_VERSION_MAJOR << 16) | PONG_VERSION_MINOR;
     size_t name_len = strlen(PONG_NET_NAME);
     if(client_str.size() != name_len + 4
-     || client_str.substr(0, name_len) != PONG_NET_NAME)
+     || client_str.substr(0, name_len) != (unsigned char*)PONG_NET_NAME)
     {
         client->disconnect("Incompatible software");
         return ;
     }
-    unsigned int client = readInt4(&client_str[name_len]);
-    if(server != client)
+    unsigned int vclient = readInt4(&client_str[name_len]);
+    if(vserver != vclient)
     {
         client->disconnect("Incompatible version");
         return ;

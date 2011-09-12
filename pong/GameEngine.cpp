@@ -1,10 +1,12 @@
 #include "GameEngine.h"
 
+#include <iostream>
+
 GameEngine::GameEngine(ERole role, bool display)
-  : m_eRole(role), m_bDisplay(display),
+  : m_eRole(role), m_bDisplay(display), m_pLocalRacket(NULL),
   // CVars
-  ball_speed("ball_speed", "Speed of the ball", 0.08f),
-  racket_speed("racket_speed", "Speed of the racket", 0.3f)
+  ball_speed(this, "ball_speed", "Speed of the ball", 0.08f),
+  racket_speed(this, "racket_speed", "Speed of the racket", 0.3f)
 {
     m_Rackets[0] = NULL;
     m_Rackets[1] = NULL;
@@ -24,6 +26,9 @@ void GameEngine::setup()
     m_Rackets[0]->w = 20; m_Rackets[0]->h = 100;
     m_Rackets[0]->vx = 0.f; m_Rackets[0]->vy = 0.f;
     m_Rackets[0]->r = 127; m_Rackets[0]->g = 127; m_Rackets[0]->b = 127;
+
+    if(m_bDisplay)
+        m_pLocalRacket = m_Rackets[0];
 
     m_Rackets[1] = new MovingRect(this);
     m_Rackets[1]->x = 600.f; m_Rackets[1]->y = 20.f;
@@ -92,7 +97,7 @@ void GameEngine::mainLoop()
             SDL_FillRect(m_pScreen, NULL,
                     SDL_MapRGB(m_pScreen->format, 0, 0, 0));
             std::set<MovingRect*>::iterator rect = m_Rects.begin();
-            for(; it != m_Rects.end(); ++rect)
+            for(; rect != m_Rects.end(); ++rect)
             {
                 SDL_Rect r = {(int)(*rect)->x, (int)(*rect)->y,
                         (*rect)->w, (*rect)->h};
@@ -179,9 +184,15 @@ void GameEngine::tick()
     }
 }
 
+void GameEngine::console_msg(const std::string &msg)
+{
+    // TODO : in-game console
+    std::cerr << "!!! " << msg << "\n";
+}
+
 Msg::Data GameEngine::version() const
 {
-    return Msg::Data(PONG_NET_NAME)
+    return Msg::Data((unsigned char*)PONG_NET_NAME)
             + writeInt2(PONG_VERSION_MAJOR)
             + writeInt2(PONG_VERSION_MINOR);
 }

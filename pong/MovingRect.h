@@ -25,7 +25,7 @@ public:
 
     void tick(unsigned int ticks);
 
-    void recvUpdate(const Msg::Data &data) throw ProtocolMismatch;
+    void recvUpdate(const Msg::Data &data) throw(ProtocolMismatch);
     Msg::Data toUpdate() const;
 
     /**

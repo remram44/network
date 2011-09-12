@@ -1,4 +1,5 @@
 #include "MovingRect.h"
+#include "GameEngine.h"
 
 NET_OBJECT_I(MovingRect, "MovingRect");
 
@@ -18,7 +19,7 @@ void MovingRect::tick(unsigned int ticks)
     y += vy * TIMESTEP * ticks;
 }
 
-void MovingRect::recvUpdate(const Msg::Data &data) throw ProtocolMismatch
+void MovingRect::recvUpdate(const Msg::Data &data) throw(ProtocolMismatch)
 {
     if(data.size() != 40)
         throw ProtocolMismatch("MovingRect", getID());

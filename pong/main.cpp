@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
     while(*argv)
     {
-        if(strcmp(*argv, "-h") == 0 || strcmp(*arv, "--help") == 0)
+        if(strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0)
         {
             help(std::cout);
             return 0;
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
             std::cerr << "Too many parameters on the commandline!\n";
             return 1;
         }
-        (*argv)++;
+        argv++;
     }
 
     try {
@@ -83,11 +83,11 @@ int main(int argc, char **argv)
                 return 1;
             }
 
-            Client *client;
+            ClientEngine *client;
             if(tcp)
-                client = new ClientEngine(args[0], port, NetClient::PROTO_TCP);
+                client = new ClientEngine(args[0], port, 1); // FIXME : proto?
             else
-                client = new ClientEngine(args[0], port, NetClient::PROTO_UDP);
+                client = new ClientEngine(args[0], port, 0);
             client->run();
         }
         else // Server
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
                 return 1;
             }
 
-            Server *server = new ServerEngine(dedicated, port);
+            ServerEngine *server = new ServerEngine(dedicated, port);
             server->run();
         }
     }

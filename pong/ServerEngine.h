@@ -7,12 +7,17 @@
 
 class ServerEngine : public GameEngine, public NetServer {
 
+private:
+    bool m_bDedicated;
+
 public:
     ServerEngine(bool dedicated, int port);
     void run();
     void clientConnecting(ConnectedClient *client);
     void clientConnected(ConnectedClient *client);
     void handleClientMessage(ConnectedClient *client, const Msg::Data &data);
+    void shutdown();
+    void input(EKey key, bool pressed);
 
 };
 
