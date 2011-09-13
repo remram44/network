@@ -70,9 +70,20 @@ NetClient::EState NetClient::SyncedState::state() const
  * NetClient.
  */
 
+NetClient::NetClient(const Msg::Data &clientVersion, const char *host, int port,
+        int proto)
+{
+    // TODO : NetClient::NetClient()
+}
+
 void NetClient::update()
 {
     // TODO : NetClient::update()
+}
+
+void NetClient::sendClientMsg(const Msg::Data &data)
+{
+    // TODO : sendClientMsg()
 }
 
 unsigned int NetClient::newObject(NetObject *obj)
@@ -88,4 +99,14 @@ bool NetClient::syncWithServer()
 {
     // TODO : NetClient::syncWithServer()
     return false;
+}
+
+void NetClient::disconnect(const std::string &reason)
+{
+    // TODO : NetClient::disconnect()
+}
+
+void NetClient::addCVar(const char *var_name, CVarBase *cvar)
+{
+    // TODO : NetClient::addCVar()
 }

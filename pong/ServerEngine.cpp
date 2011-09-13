@@ -41,7 +41,37 @@ void ServerEngine::clientConnected(ConnectedClient *client)
     // TODO : Assign a racket to the new client
 }
 
+void ServerEngine::clientDisconnected(ConnectedClient *client)
+{
+    // TODO : Assign a racket to another client?
+}
+
 void ServerEngine::handleClientMessage(ConnectedClient *client, const Msg::Data &data)
 {
     // TODO : Move a racket
+}
+
+void ServerEngine::shutdown()
+{
+    const std::set<ConnectedClient*> &clients = getClients();
+    std::set<ConnectedClient*>::const_iterator c = clients.begin();
+    for(; c != clients.end(); ++c)
+        (*c)->disconnect("Server shutting down");
+}
+
+void ServerEngine::input(EKey key, bool pressed)
+{
+    // TODO : ServerEngine::input()
+    if(pressed)
+    {
+        switch(key)
+        {
+        case KEY_UP:
+            break;
+        case KEY_DOWN:
+            break;
+        }
+    }
+    else
+        ;
 }

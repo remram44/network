@@ -132,7 +132,7 @@ public:
      *
      * The given message is sent, if specified.
      */
-    void disconnect(const std::string &reason);
+    void disconnect(const std::string &reason = std::string());
 
     /**
      * Method called to register a CVar, to keep in sync with the server.

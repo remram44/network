@@ -190,6 +190,12 @@ void GameEngine::console_msg(const std::string &msg)
     std::cerr << "!!! " << msg << "\n";
 }
 
+void GameEngine::reportProgress(float progress, const std::string &details)
+{
+    // TODO : progress screen
+    std::cerr << (int)(100.f*progress) << "% " << details << "\n";
+}
+
 Msg::Data GameEngine::version() const
 {
     return Msg::Data((unsigned char*)PONG_NET_NAME)

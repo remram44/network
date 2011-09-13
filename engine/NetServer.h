@@ -4,6 +4,8 @@
 #include "Net.h"
 #include "CVar.h"
 
+#include <set>
+
 /**
  * Abstract class representing a client connected to this server.
  */
@@ -15,7 +17,7 @@ private:
 public:
     inline const Msg::Data &getClientVersion() const
     { return m_ClientVersion; }
-    virtual void disconnect(const std::string &reason) = 0;
+    virtual void disconnect(const std::string &reason = std::string()) = 0;
     virtual void sendMsg(const Msg::Data &data) = 0;
 
 };
@@ -54,6 +56,13 @@ public:
     virtual void clientConnected(ConnectedClient *client) = 0;
 
     /**
+     * Method called when a client disconnects.
+     *
+     * You can't send messages to it now.
+     */
+    virtual void clientDisconnected(ConnectedClient *client) = 0;
+
+    /**
      * Method handling a message from a client.
      */
     virtual void handleClientMessage(ConnectedClient *client,
@@ -77,6 +86,8 @@ public:
      * Method called to register a CVar, to be replicated to clients.
      */
     virtual void addCVar(const char *var_name, CVarBase *cvar);
+
+    virtual const std::set<ConnectedClient*> &getClients() const;
 
 };
 

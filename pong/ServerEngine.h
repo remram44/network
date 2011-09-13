@@ -15,6 +15,7 @@ public:
     void run();
     void clientConnecting(ConnectedClient *client);
     void clientConnected(ConnectedClient *client);
+    void clientDisconnected(ConnectedClient *client);
     void handleClientMessage(ConnectedClient *client, const Msg::Data &data);
     void shutdown();
     void input(EKey key, bool pressed);

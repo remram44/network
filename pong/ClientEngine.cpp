@@ -16,9 +16,7 @@ void ClientEngine::run()
         mainLoop();
     }
     else
-    {
         SDL_Delay(5000);
-    }
 }
 
 void ClientEngine::stateChanged(const NetClient::State &state)
@@ -111,4 +109,9 @@ void ClientEngine::input(EKey key, bool pressed)
     }
     else
         sendClientMsg(Msg::Data((unsigned char*)"\x00", 1));
+}
+
+void ClientEngine::shutdown()
+{
+    disconnect();
 }
