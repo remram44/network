@@ -127,6 +127,11 @@ Msg::Data writeFloat(float f)
 
 /*============================================================================*/
 
+NetworkEngine::NetworkEngine()
+  : m_iCurrentTick(0)
+{
+}
+
 NetObject::NetObject(NetworkEngine *app)
   : m_pApp(app)
 {

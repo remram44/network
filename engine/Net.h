@@ -110,6 +110,8 @@ protected:
     virtual void update() = 0;
 
 public:
+    NetworkEngine();
+
     /**
      * Function called periodically to advance by 1 tick.
      */
@@ -121,7 +123,7 @@ public:
      *
      * 0 <= N < 0x8000 and loops.
      */
-    inline unsigned short getCurrentTick()
+    inline unsigned short getCurrentTick() const
     { return m_iCurrentTick; }
 
     /**
