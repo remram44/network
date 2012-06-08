@@ -57,8 +57,6 @@ public:
     virtual int Recv(char *data, size_t size_max, bool bWait = true)
         throw(SocketConnectionClosed);
 
-    Socket *UnderlyingSocket();
-
     /**
      * Gets the local port to which this socket is bound, or -1.
      */

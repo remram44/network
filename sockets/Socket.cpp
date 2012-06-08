@@ -1,5 +1,7 @@
 #include "Socket.h"
 
+#include <map>
+
 const char *SocketFatalError::what()
 {
     return "Fatal error";
@@ -124,6 +126,11 @@ bool Socket::Wait(int timeout) const
     return FD_ISSET(m_iSocket, &fds);
 }
 
+void Socket::RegisterSockets(SocketSetRegistrar *registrar)
+{
+    registrar->AddSocket(this);
+}
+
 int Socket::Unlock(Socket *s)
 {
     int sock = s->GetSocket();
@@ -151,26 +158,26 @@ const SockAddress *Socket::Resolve(const char *name, unsigned int types)
 
 /*============================================================================*/
 
-bool SocketSet::IsSet(Socket *sock)
+bool SocketSet::IsSet(Waitable *obj)
 {
-    std::set<Socket*>::const_iterator it;
-    it = m_Sockets.find(sock);
-    return it != m_Sockets.end();
+    std::set<Waitable*>::const_iterator it;
+    it = m_Set.find(obj);
+    return it != m_Set.end();
 }
 
-void SocketSet::AddSocket(Socket *sock)
+void SocketSet::Add(Waitable *obj)
 {
-    if(!IsSet(sock))
-        m_Sockets.insert(sock);
+    if(!IsSet(obj))
+        m_Set.insert(obj);
 }
 
-bool SocketSet::RemoveSocket(Socket *sock)
+bool SocketSet::Remove(Waitable *obj)
 {
-    std::set<Socket*>::iterator it;
-    it = m_Sockets.find(sock);
-    if(it != m_Sockets.end())
+    std::set<Waitable*>::iterator it;
+    it = m_Set.find(obj);
+    if(it != m_Set.end())
     {
-        m_Sockets.erase(it);
+        m_Set.erase(it);
         return true;
     }
     else
@@ -179,25 +186,43 @@ bool SocketSet::RemoveSocket(Socket *sock)
 
 void SocketSet::Clear()
 {
-    m_Sockets.clear();
+    m_Set.clear();
 }
 
-Socket *SocketSet::Wait(int timeout)
-{
+
+/*============================================================================*/
+
+class FDSetWrapper {
+
+private:
     fd_set fds;
+    int greatest;
+    std::map<Socket*, Waitable*> registered_sockets;
+
+public:
+    FDSetWrapper();
+    void AddSocket(Waitable *obj, Socket *sock);
+    Waitable *Wait(int timeout);
+
+};
+
+FDSetWrapper::FDSetWrapper()
+{
     FD_ZERO(&fds);
+    greatest = -1;
+}
 
-    int greatest = -1;
+void FDSetWrapper::AddSocket(Waitable *obj, Socket *sock)
+{
+    int s = sock->GetSocket();
+    if(s > greatest)
+        greatest = s;
+    registered_sockets[sock] = obj;
+    FD_SET((SOCKET)s, &fds);
+}
 
-    std::set<Socket*>::iterator it = m_Sockets.begin();
-    while(it != m_Sockets.end())
-    {
-        if((*it)->GetSocket() > greatest)
-            greatest = (*it)->GetSocket();
-        FD_SET((SOCKET)(*it)->GetSocket(), &fds);
-        ++it;
-    }
-
+Waitable *FDSetWrapper::Wait(int timeout)
+{
     if(greatest == -1)
         return NULL; // No valid socket?
 
@@ -213,14 +238,40 @@ Socket *SocketSet::Wait(int timeout)
         select(greatest + 1, &fds, NULL, NULL, &tv);
     }
 
-    it = m_Sockets.begin();
-    while(it != m_Sockets.end())
+    std::map<Socket*, Waitable*>::const_iterator it;
+    it = registered_sockets.begin();
+    while(it != registered_sockets.end())
     {
-        if(FD_ISSET((*it)->GetSocket(), &fds))
-            return *it;
+        if(FD_ISSET(it->first->GetSocket(), &fds))
+            return it->second;
         else
             ++it;
     }
 
     return NULL;
+}
+
+SocketSetRegistrar::SocketSetRegistrar(FDSetWrapper *wrapper, Waitable *obj)
+  : m_Wrapper(wrapper), m_Waitable(obj)
+{
+}
+
+void SocketSetRegistrar::AddSocket(Socket *sock)
+{
+    m_Wrapper->AddSocket(m_Waitable, sock);
+}
+
+Waitable *SocketSet::Wait(int timeout)
+{
+    FDSetWrapper fds;
+
+    std::set<Waitable*>::iterator it = m_Set.begin();
+    while(it != m_Set.end())
+    {
+        SocketSetRegistrar reg(&fds, *it);
+        (*it)->RegisterSockets(&reg);
+        ++it;
+    }
+
+    return fds.Wait(timeout);
 }

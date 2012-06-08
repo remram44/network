@@ -24,7 +24,7 @@ public:
     void Send(const char *data, size_t size) throw (SocketConnectionClosed);
     int Recv(char *data, size_t size_max, bool bWait)
             throw (SocketConnectionClosed);
-    Socket *UnderlyingSocket();
+    void RegisterSockets(SocketSetRegistrar *registrar);
 
 private:
     void run();

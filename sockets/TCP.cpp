@@ -80,11 +80,6 @@ int TCPSocket::Recv(char *data, size_t size_max, bool bWait)
         return 0;
 }
 
-Socket *TCPSocket::UnderlyingSocket()
-{
-    return this;
-}
-
 int TCPSocket::GetLocalPort() const
 {
     struct sockaddr_in address;

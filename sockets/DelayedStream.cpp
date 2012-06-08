@@ -43,9 +43,9 @@ int DelayedStream::Recv(char *data, size_t size_max, bool bWait)
     return m_AppSocket->Recv(data, size_max, bWait);
 }
 
-Socket *DelayedStream::UnderlyingSocket()
+void DelayedStream::RegisterSockets(SocketSetRegistrar *registrar)
 {
-    return m_AppSocket;
+    registrar->AddSocket(m_AppSocket);
 }
 
 struct Event {
@@ -58,15 +58,15 @@ void DelayedStream::run()
 {
     m_InterSocket =
             TCPSocket::Connect("localhost", m_TempServer->GetLocalPort());
-    m_Set.AddSocket(m_InterSocket);
-    m_Set.AddSocket(m_Uplink->UnderlyingSocket());
+    m_Set.Add(m_InterSocket);
+    m_Set.Add(m_Uplink);
 
     char buffer[512];
     std::list<Event> queue;
     try {
         for(;;)
         {
-            Socket *sock;
+            Waitable *sock;
             if(!queue.empty())
             {
                 std::list<Event>::iterator it = queue.begin();

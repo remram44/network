@@ -145,12 +145,24 @@ public:
 
 /*============================================================================*/
 
+class SocketSetRegistrar;
+
+class Waitable {
+
+public:
+    virtual void RegisterSockets(SocketSetRegistrar *registrar) = 0;
+
+};
+
+
+/*============================================================================*/
+
 /**
  * A socket.
  *
  * Base class, useful notably to SocketSets.
  */
-class Socket {
+class Socket : public virtual Waitable {
 
 private:
     int m_iSocket;
@@ -196,6 +208,8 @@ public:
     static const SockAddress *Resolve(const char *name,
             unsigned int types = SockAddress::ANY_TYPE);
 
+    void RegisterSockets(SocketSetRegistrar *registrar);
+
 public:
     /**
      * Initializes the module.
@@ -214,13 +228,77 @@ public:
 
 /*============================================================================*/
 
+class FDSetWrapper;
+
+class SocketSetRegistrar {
+
+private:
+    FDSetWrapper *m_Wrapper;
+    Waitable *m_Waitable;
+
+public:
+    SocketSetRegistrar(FDSetWrapper *wrapper, Waitable *obj);
+    void AddSocket(Socket *sock);
+
+};
+
+/**
+ * A group of sockets.
+ *
+ * By putting several sockets in a SocketSet, we can put the process to sleep
+ * until something happens to either one of them.
+ */
+class SocketSet {
+
+private:
+    std::set<Waitable*> m_Set;
+
+public:
+    /**
+     * Indicates whether a Waitable is already in this group.
+     */
+    bool IsSet(Waitable *obj);
+
+    /**
+     * Adds a Waitable to this group.
+     */
+    void Add(Waitable *obj);
+
+    /**
+     * Removes a Waitable from this group.
+     *
+     * @return true If this Waitable was previously in the group, false
+     * otherwise.
+     */
+    bool Remove(Waitable *obj);
+
+    /**
+     * Removes all the sockets from this group.
+     */
+    void Clear();
+
+    /**
+     * Waits for a change on the sockets of this group.
+     *
+     * @param timeout Maximum time (in milliseconds) to wait for an event. 0
+     * returns immediately, and a negative value means to wait forever.
+     * @return NULL if no socket was modified, or one of the modified sockets if
+     * something happened.
+     */
+    Waitable *Wait(int timeout = -1);
+
+};
+
+
+/*============================================================================*/
+
 /**
  * A bidirectional network connection.
  *
  * This interface represents any type of bytestream, for instance a raw TCP
  * socket, a SSL transmission, the traversal of one or more proxies, ...
  */
-class NetStream {
+class NetStream : public virtual Waitable {
 
 public:
     virtual ~NetStream() {}
@@ -243,66 +321,6 @@ public:
      */
     virtual int Recv(char *data, size_t size_max, bool bWait = true)
         throw(SocketConnectionClosed) = 0;
-
-    /**
-     * The underlying socket, if any.
-     *
-     * If it has a meaning, the underlying socket used to communicate, for
-     * instance with the first proxy server. Obviously, it shouldn't be used for
-     * communication, as the transmission can use one or more protocols on top
-     * of this socket.
-     * If it doesn't have any meaning, this function will return NULL.
-     */
-    virtual Socket *UnderlyingSocket() = 0;
-
-};
-
-
-/*============================================================================*/
-
-/**
- * A group of sockets.
- *
- * By putting several sockets in a SocketSet, we can put the process to sleep
- * until something happens to either one of them.
- */
-class SocketSet {
-
-private:
-    std::set<Socket*> m_Sockets;
-
-public:
-    /**
-     * Indicates whether a socket is already in this group.
-     */
-    bool IsSet(Socket *sock);
-
-    /**
-     * Adds a socket to this group.
-     */
-    void AddSocket(Socket *sock);
-
-    /**
-     * Removes une socket from this group.
-     *
-     * @return true If this socket was previously in the group, false elsewise.
-     */
-    bool RemoveSocket(Socket *sock);
-
-    /**
-     * Removes all the sockets from this group.
-     */
-    void Clear();
-
-    /**
-     * Waits for a change on the sockets of this group.
-     *
-     * @param timeout Maximum time (in milliseconds) to wait for an event. 0
-     * returns immediately, and a negative value means to wait forever.
-     * @return NULL if no socket was modified, or one of the modified sockets if
-     * something happened.
-     */
-    Socket *Wait(int timeout = -1);
 
 };
 
