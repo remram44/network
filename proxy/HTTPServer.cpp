@@ -7,15 +7,15 @@ HTTPServer::HTTPServer(int port, Proxy *proxy)
 {
 }
 
-HTTPServer::HTTPServerConnection *HTTPServer::newConnection(TCPSocket *cl)
+HTTPServer::Connection *HTTPServer::newConnection(TCPSocket *cl)
 {
-    return new HTTPServerConnection(cl);
+    return new HTTPServer::Connection(cl);
 }
 
-void HTTPServer::handleInitialData(BaseProxyConnection *c,
+void HTTPServer::handleInitialData(BaseTCPProxyServer::Connection *c,
         const char *buf, size_t r, TCPSocket *cl)
 {
-    HTTPServerConnection *conn = (HTTPServerConnection*)c;
+    HTTPServer::Connection *conn = (HTTPServer::Connection*)c;
     // Client for which we haven't already established a connection
     size_t s = conn->request.size();
     s = (s <= 3)?0:s - 3;

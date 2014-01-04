@@ -15,9 +15,6 @@
 class Forwarder : public BaseTCPProxyServer {
 
 private:
-    typedef BaseProxyConnection ForwarderConnection;
-
-private:
     std::string m_sTargetHost;
     int m_iTargetPort;
 
@@ -25,7 +22,7 @@ public:
     Forwarder(int port, const std::string &target_host, int target_port,
         Proxy *proxy = NULL);
 
-    ForwarderConnection *newConnection(TCPSocket *cl);
+    Connection *newConnection(TCPSocket *cl);
 
 };
 

@@ -1,18 +1,19 @@
 #ifndef BASETCPPROXYSERVER_HPP
 #define BASETCPPROXYSERVER_HPP
 
-struct BaseProxyConnection {
-    TCPSocket *incoming;
-    NetStream *outgoing;
-    bool forwarding;
-
-    BaseProxyConnection(TCPSocket *i, NetStream *o = NULL)
-      : incoming(i), outgoing(o), forwarding(false)
-    {
-    }
-};
-
 class BaseTCPProxyServer : public ProxyServer {
+
+protected:
+    struct Connection {
+        TCPSocket *incoming;
+        NetStream *outgoing;
+        bool forwarding;
+
+        Connection(TCPSocket *i, NetStream *o = NULL)
+          : incoming(i), outgoing(o), forwarding(false)
+        {
+        }
+    };
 
 protected:
     Proxy *m_pProxy;
@@ -20,20 +21,20 @@ protected:
 private:
     TCPServer *m_pSock;
     // Maps incoming connections
-    std::map<Waitable*, BaseProxyConnection*> m_aIncoming;
+    std::map<Waitable*, Connection*> m_aIncoming;
     // Maps outgoing connections
-    std::map<Waitable*, BaseProxyConnection*> m_aOutgoing;
+    std::map<Waitable*, Connection*> m_aOutgoing;
     // SocketSet containing the server socket m_pSock, the incoming connections
     // to the clients and the outgoing NetStream objects
     SocketSet m_Set;
 
 protected:
-    virtual BaseProxyConnection *newConnection(TCPSocket *cl)
+    virtual Connection *newConnection(TCPSocket *cl)
     {
-        return new BaseProxyConnection(cl);
+        return new Connection(cl);
     }
 
-    virtual void handleInitialData(BaseProxyConnection *,
+    virtual void handleInitialData(Connection *,
             const char *, size_t, TCPSocket *)
     {
         abort();
@@ -72,7 +73,7 @@ public:
             TCPSocket *cl = m_pSock->accept(0);
             if(cl)
             {
-                BaseProxyConnection *conn;
+                Connection *conn;
                 try {
                     conn = newConnection(cl);
                 }
@@ -115,7 +116,7 @@ public:
 #ifdef _DEBUG
             std::cerr << "receiving data from a client...";
 #endif
-            BaseProxyConnection *conn = m_aIncoming[signaled];
+            Connection *conn = m_aIncoming[signaled];
             TCPSocket *cl = conn->incoming;
             try {
                 static char buf[1024];
@@ -167,7 +168,7 @@ public:
 #ifdef _DEBUG
             std::cerr << "Forwarder: receiving data on a NetStream...";
 #endif
-            BaseProxyConnection *conn = m_aOutgoing[signaled];
+            Connection *conn = m_aOutgoing[signaled];
             TCPSocket *cl = conn->incoming;
             NetStream *stream = conn->outgoing;
             try {

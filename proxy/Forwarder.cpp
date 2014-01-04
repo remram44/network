@@ -10,9 +10,9 @@ Forwarder::Forwarder(int port, const std::string &target_host, int target_port,
 {
 }
 
-Forwarder::ForwarderConnection *Forwarder::newConnection(TCPSocket *cl)
+Forwarder::Connection *Forwarder::newConnection(TCPSocket *cl)
 {
-    return new ForwarderConnection(
+    return new Connection(
             cl,
             m_pProxy->connect(m_sTargetHost.c_str(), m_iTargetPort));
 }

@@ -15,11 +15,11 @@
 class HTTPServer : public BaseTCPProxyServer {
 
 private:
-    struct HTTPServerConnection : public BaseProxyConnection {
+    struct Connection : public BaseTCPProxyServer::Connection {
         std::string request;
 
-        HTTPServerConnection(TCPSocket *i)
-          : BaseProxyConnection(i)
+        Connection(TCPSocket *i)
+          : BaseTCPProxyServer::Connection(i)
         {
         }
     };
@@ -27,8 +27,8 @@ private:
 public:
     HTTPServer(int port, Proxy *proxy = NULL);
 
-    HTTPServerConnection *newConnection(TCPSocket *cl);
-    void handleInitialData(BaseProxyConnection *conn,
+    Connection *newConnection(TCPSocket *cl);
+    void handleInitialData(BaseTCPProxyServer::Connection *conn,
             const char *buf, size_t r, TCPSocket *cl);
 
 };
