@@ -1,6 +1,9 @@
+#include "sockets/config.h"
 #include "sockets/Socket.h"
 #include "sockets/TCP.h"
+#ifdef ENABLE_SSL
 #include "sockets/SSLSocket.h"
+#endif
 #include "sockets/UDP.h"
 
 #include <iostream>
@@ -9,7 +12,10 @@ int main(int argc, char **argv)
 {
     Socket::init();
 
-    bool do_tcp = false, do_https = false, do_ssl = false, do_udp = false;
+    bool do_tcp = false, do_udp = false;
+#ifdef ENABLE_SSL
+    bool do_https = false, do_ssl = false;
+#endif
 
     if(argc > 1)
     {
@@ -19,12 +25,20 @@ int main(int argc, char **argv)
             std::string arg = *argv;
             if(arg == "tcp")
                 do_tcp = true;
+            else if(arg == "udp")
+                do_udp = true;
+#ifdef ENABLE_SSL
             else if(arg == "https")
                 do_https = true;
             else if(arg == "ssl")
                 do_ssl = true;
-            else if(arg == "udp")
-                do_udp = true;
+#else
+            else if( (arg == "https") || (arg == "ssl") )
+            {
+                std::cerr << "SSL has not been enabled in the configuration\n";
+                return 1;
+            }
+#endif
             else
             {
                 std::cerr << "Parameter \"" << arg << "\" was not understood.\n"
@@ -88,6 +102,7 @@ int main(int argc, char **argv)
         std::cerr << "\nTCP testing finished\n\n";
     }
 
+#ifdef ENABLE_SSL
     if(do_https)
     {
         SSLSocket::init();
@@ -215,6 +230,7 @@ int main(int argc, char **argv)
 
         std::cerr << "\nSSL testing finished\n";
     }
+#endif
 
     if(do_udp)
     {

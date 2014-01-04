@@ -1,6 +1,12 @@
 #ifndef SSLSOCKET_H
 #define SSLSOCKET_H
 
+#include "config.h"
+
+#ifndef ENABLE_SSL
+#error "SSL has not been enabled in the configuration"
+#endif
+
 #include "Socket.h"
 #include "TCP.h"
 
