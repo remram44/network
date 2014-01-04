@@ -27,8 +27,8 @@ void HTTPServer::update(bool bWait)
 #ifdef _DEBUG
     std::cerr << "HTTPServer: update(" << (bWait?"true":"false") << ")\n";
 #endif
-    Waitable *sock = m_Set.wait(bWait?-1:0);
-    if(sock == m_pSock)
+    Waitable *signaled = m_Set.wait(bWait?-1:0);
+    if(signaled == m_pSock)
     {
         // New connection
 #ifdef _DEBUG
@@ -37,9 +37,8 @@ void HTTPServer::update(bool bWait)
         TCPSocket *cl = m_pSock->accept(0);
         if(cl)
         {
-            Client *c = new Client;
-            c->stream = NULL;
-            m_aConnections[cl] = c;
+            Client *c = new Client(cl);
+            m_aIncoming[cl] = c;
             m_Set.add(cl);
 #ifdef _DEBUG
             std::cerr << " ok\n";
@@ -52,37 +51,39 @@ void HTTPServer::update(bool bWait)
 #endif
         }
     }
-    else if(m_aConnections.find((TCPSocket*)sock) != m_aConnections.end())
+    else if(m_aIncoming.find(signaled) != m_aIncoming.end())
     {
         // Receives data from a client
 #ifdef _DEBUG
         std::cerr << "HTTPServer: receiving data from a client...";
 #endif
-        TCPSocket *cl = (TCPSocket*)sock;
+        Client *c = m_aIncoming[signaled];
+        TCPSocket *cl = c->incoming;
         try {
-            Client *c = m_aConnections[cl];
             static char buf[1024];
             int r = cl->recv(buf, 1024, false);
             if(r <= 0)
                 throw SocketConnectionClosed();
-            if(c->stream != NULL)
+            if(c->outgoing != NULL)
             {
                 // Client already connected: dumb copy
 #ifdef _DEBUG
                 std::cerr << " forward (" << r << ")\n";
 #endif
-                c->stream->send(buf, r);
+                c->outgoing->send(buf, r);
             }
             else
             {
                 // Client for which we haven't already established a connection
+                size_t s = c->request.size();
+                s = (s <= 3)?0:s - 3;
                 c->request.append(buf, r);
                 if(c->request.size() > 4096)
                     throw SocketConnectionClosed();
                 size_t i, j;
-                if( ((j = 1, i = c->request.find("\n\n")) !=
+                if( ((j = 2, i = c->request.find("\n\n", s)) !=
                     std::string::npos)
-                 || ((j = 2, i = c->request.find("\n\r\n")) !=
+                 || ((j = 4, i = c->request.find("\r\n\r\n", s)) !=
                     std::string::npos) )
                 {
                     // We have received a line, the request is complete
@@ -90,9 +91,9 @@ void HTTPServer::update(bool bWait)
                     std::cerr << " request is complete\n";
 #endif
                     std::string req = c->request.substr(0, i+j);
-                    std::string missing = c->request.substr(i+j+1);
-                    // req = "CONNECT <host>:<port> HTTP/......\n\n" ou "\n\r\n"
-                    // missing : beginning of the data, which we'll have to send
+                    std::string missing = c->request.substr(i+j);
+                    // req = "CONNECT <host>:<port> HTTP/......\n\n" or "\n\r\n"
+                    // missing: beginning of the data, which we'll have to send
                     if(req.substr(0, 8) != "CONNECT ")
                         throw SocketConnectionClosed();
                     size_t colon = req.find(':', 8);
@@ -108,13 +109,13 @@ void HTTPServer::update(bool bWait)
                      || !iss.eof())
                         throw SocketConnectionClosed();
                     // Establishes the connection
-                    c->request = "";
+                    c->request.reserve(0);
 #ifdef _DEBUG
                     std::cerr << "HTTPServer: proxy.Connect(" << host << ", "
                         << port << ")...";
 #endif
                     try {
-                        c->stream = m_pProxy->connect(host.c_str(), port);
+                        c->outgoing = m_pProxy->connect(host.c_str(), port);
                     }
                     // FIXME : other exceptions?
                     catch(SocketError &e)
@@ -122,20 +123,20 @@ void HTTPServer::update(bool bWait)
 #ifdef _DEBUG
                         std::cerr << " error\n";
 #endif
-                        cl->send("HTTP/1.0 503 Service Unavailable\n\n", 34);
+                        cl->send("HTTP/1.0 503 Service Unavailable\r\n\r\n", 36);
                         throw SocketConnectionClosed();
                     }
 #ifdef _DEBUG
                     std::cerr << " Ok\n";
 #endif
-                    cl->send("HTTP/1.0 200 Connection established\n\n", 37);
+                    cl->send("HTTP/1.0 200 Connection established\r\n\r\n", 39);
                     // We add it to the SocketSet, and we store the pair
                     // NetStream => TCPSocket
-                    m_Set.add(c->stream);
-                    m_aNetStream2Client[c->stream] = cl;
+                    m_Set.add(c->outgoing);
+                    m_aOutgoing[c->outgoing] = c;
                     // We send the initial data, which was received with the
                     // request
-                    c->stream->send(missing.c_str(), missing.size());
+                    c->outgoing->send(missing.c_str(), missing.size());
                 }
                 else
                 {
@@ -147,15 +148,15 @@ void HTTPServer::update(bool bWait)
         }
         catch(SocketConnectionClosed &e)
         {
-            NetStream *stream = m_aConnections[cl]->stream;
-            if(stream)
+            if(c->outgoing)
             {
-                m_Set.remove(stream);
-                m_aNetStream2Client.erase(stream);
-                delete stream;
+                m_Set.remove(c->outgoing);
+                m_aOutgoing.erase(c->outgoing);
+                delete c->outgoing;
             }
-            m_aConnections.erase(cl);
             m_Set.remove(cl);
+            m_aIncoming.erase(cl);
+            delete c;
             delete cl;
 #ifdef _DEBUG
             std::cerr << " connection closed by the client\n";
@@ -168,36 +169,32 @@ void HTTPServer::update(bool bWait)
 #ifdef _DEBUG
         std::cerr << "HTTPServer: receiving data on a NetStream...";
 #endif
-        std::map<Socket*, TCPSocket*>::iterator it =
-            m_aNetStream2Client.find(sock);
-        if(it != m_aNetStream2Client.end())
-        {
-            TCPSocket *cl = it->second;
-            try {
-                static char buf[1024];
-                int r = m_aConnections[cl]->stream->recv(buf, 1024, false);
-                // Dump copy
-                if(r > 0)
-                {
-#ifdef _DEBUG
-                    std::cerr << " forward (" << r << ")\n";
-#endif
-                    cl->send(buf, r);
-                }
-            }
-            catch(SocketConnectionClosed &e)
+        Client *c = m_aOutgoing[signaled];
+        TCPSocket *cl = c->incoming;
+        try {
+            static char buf[1024];
+            int r = c->outgoing->recv(buf, 1024, false);
+            // Dumb copy
+            if(r > 0)
             {
-                m_aNetStream2Client.erase(sock);
-                if(m_aConnections[cl]->stream)
-                    delete m_aConnections[cl]->stream;
-                m_aConnections.erase(cl);
-                m_Set.remove(cl);
-                m_Set.remove(sock);
-                delete cl;
 #ifdef _DEBUG
-                std::cerr << " connection closed by the remote host\n";
+                std::cerr << " forward (" << r << ")\n";
 #endif
+                cl->send(buf, r);
             }
+        }
+        catch(SocketConnectionClosed &e)
+        {
+            m_Set.remove(c->outgoing);
+            m_aOutgoing.erase(c->outgoing);
+            delete c->outgoing;
+            m_Set.remove(cl);
+            m_aIncoming.erase(cl);
+            delete c;
+            delete cl;
+#ifdef _DEBUG
+            std::cerr << " connection closed by the remote host\n";
+#endif
         }
     }
 }
