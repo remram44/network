@@ -13,10 +13,12 @@ struct BaseProxyConnection {
 };
 
 template<class Connection>
-class BaseTCPProxyServer : ProxyServer {
+class BaseTCPProxyServer : public ProxyServer {
+
+protected:
+    Proxy *m_pProxy;
 
 private:
-    Proxy *m_pProxy;
     TCPServer *m_pSock;
     // Maps incoming connections
     std::map<Waitable*, Connection*> m_aIncoming;
@@ -26,9 +28,20 @@ private:
     // to the clients and the outgoing NetStream objects
     SocketSet m_Set;
 
+protected:
+    virtual void setupConnection(Connection *)
+    {
+    }
+
+    virtual void handleInitialData(Connection *,
+            const char *, size_t, TCPSocket *)
+    {
+        abort();
+    }
+
 public:
     BaseTCPProxyServer(int port, Proxy *proxy = NULL)
-      : m_pProy(proxy)
+      : m_pProxy(proxy)
     {
         if(m_pProxy == NULL)
         {
@@ -38,7 +51,7 @@ public:
 #endif
         }
         m_pSock = TCPServer::listen(port);
-        m_pSet.add(m_pSock);
+        m_Set.add(m_pSock);
 #ifdef _DEBUG
         std::cerr << " listening\n";
 #endif
@@ -120,7 +133,7 @@ public:
                 else
                 {
                     handleInitialData(conn, buf, r, cl);
-                    if(c->outgoing != NULL)
+                    if(conn->outgoing != NULL)
                     {
                         m_Set.add(conn->outgoing);
                         m_aOutgoing[conn->outgoing] = conn;
@@ -153,7 +166,7 @@ public:
 #ifdef _DEBUG
             std::cerr << "Forwarder: receiving data on a NetStream...";
 #endif
-            ForwarderConnection *conn = m_aOutgoing[signaled];
+            Connection *conn = m_aOutgoing[signaled];
             TCPSocket *cl = conn->incoming;
             NetStream *stream = conn->outgoing;
             try {
