@@ -135,6 +135,7 @@ public:
                     handleInitialData(conn, buf, r, cl);
                     if(conn->outgoing != NULL)
                     {
+                        conn->forwarding = true;
                         m_Set.add(conn->outgoing);
                         m_aOutgoing[conn->outgoing] = conn;
 #ifdef _DEBUG

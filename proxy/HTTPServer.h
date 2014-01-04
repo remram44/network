@@ -10,34 +10,23 @@
 #error "The HTTP server has not been enabled in the configuration"
 #endif
 
-class HTTPServer : public ProxyServer {
+#include "proxy/basetcpproxyserver.hpp"
 
-public:
-    struct Client {
-        std::string request;
-        TCPSocket *incoming;
-        NetStream *outgoing;
+struct HTTPServerConnection : public BaseProxyConnection {
+    std::string request;
 
-        Client(TCPSocket *i)
-          : incoming(i), outgoing(NULL)
-        {
-        }
-    };
+    HTTPServerConnection(TCPSocket *i)
+      : BaseProxyConnection(i)
+    {
+    }
+};
 
-private:
-    Proxy *m_pProxy;
-    TCPServer *m_pSock;
-    // Maps incoming connections
-    std::map<Waitable*, Client*> m_aIncoming;
-    // Maps outgoing connections
-    std::map<Waitable*, Client*> m_aOutgoing;
-    // SocketSet containing the server socket m_pSock, the incoming connections
-    // to the clients and the sockets in the NetStream objects
-    SocketSet m_Set;
+class HTTPServer : public BaseTCPProxyServer<HTTPServerConnection> {
 
 public:
     HTTPServer(int port, Proxy *proxy = NULL);
-    virtual void update(bool bWait = false);
+    void handleInitialData(HTTPServerConnection *conn,
+            const char *buf, size_t r, TCPSocket *cl);
 
 };
 
