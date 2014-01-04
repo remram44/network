@@ -81,7 +81,7 @@ void Forwarder::update(bool bWait)
 #ifdef _DEBUG
         std::cerr << "Forwarder: receiving data from a client...";
 #endif
-        ForwarderConnection *conn = m_aIncoming.find(signaled)->second;
+        ForwarderConnection *conn = m_aIncoming[signaled];
         TCPSocket *cl = conn->incoming;
         NetStream *stream = conn->outgoing;
         try {
