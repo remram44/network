@@ -1,7 +1,7 @@
 #ifndef TCP_H
 #define TCP_H
 
-#include "Socket.h"
+#include "sockets/Socket.h"
 
 
 /*============================================================================*/

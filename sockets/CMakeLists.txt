@@ -6,7 +6,6 @@ CONFIGURE_FILE(
     "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/config.h"
     )
-INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
 
 # Build source list with enabled components
 SET(SOCKETS_FILES Socket.cpp TCP.cpp UDP.cpp)
