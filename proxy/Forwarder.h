@@ -10,20 +10,28 @@
 #error "The forwarder has not been enabled in the configuration"
 #endif
 
+struct ForwarderConnection {
+    TCPSocket *incoming;
+    NetStream *outgoing;
+
+    ForwarderConnection(TCPSocket *i, NetStream *o)
+      : incoming(i), outgoing(o)
+    {
+    }
+};
+
 class Forwarder : public ProxyServer {
 
 private:
     Proxy *m_pProxy;
     TCPServer *m_pSock;
-    // Socket connected to the client => NetStream
-    std::map<TCPSocket*, NetStream*> m_aConnections;
+    // Maps incoming connections
+    std::map<Waitable*, ForwarderConnection*> m_aIncoming;
+    // Maps outgoing connections
+    std::map<Waitable*, ForwarderConnection*> m_aOutgoing;
     // SocketSet containing the server socket m_pSock, the incoming connections
-    // to the clients and the sockets in the NetStream objects
+    // to the clients and the outgoing NetStream objects
     SocketSet m_Set;
-    // Sockets in the NetStreams => socket connected to the client using it
-    // Allows to find the correct Client when m_Set indicates that data was
-    // received on one of the NetStreams
-    std::map<Socket*, TCPSocket*> m_aNetStream2Client;
 
     std::string m_sTargetHost;
     int m_iTargetPort;

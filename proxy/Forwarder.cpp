@@ -4,7 +4,7 @@
 #include <sstream>
 
 Forwarder::Forwarder(int port, const std::string &target_host, int target_port,
-    Proxy *proxy)
+        Proxy *proxy)
   : m_pProxy(proxy), m_sTargetHost(target_host), m_iTargetPort(target_port)
 {
 #ifdef _DEBUG
@@ -29,8 +29,8 @@ void Forwarder::update(bool bWait)
 #ifdef _DEBUG
     std::cerr << "Forwarder: update(" << (bWait?"true":"false") << ")\n";
 #endif
-    Socket *sock = m_Set.wait(bWait?-1:0);
-    if(sock == m_pSock)
+    Waitable *signaled = m_Set.wait(bWait?-1:0);
+    if(signaled == m_pSock)
     {
         // New connection
 #ifdef _DEBUG
@@ -39,15 +39,10 @@ void Forwarder::update(bool bWait)
         TCPSocket *cl = m_pSock->accept(0);
         if(cl)
         {
+            NetStream *stream;
             try {
-                NetStream *stream = m_pProxy->connect(m_sTargetHost.c_str(),
-                    m_iTargetPort);
-                m_aConnections[cl] = stream;
-                m_Set.add(cl);
-                // We add it to the SocketSet, and we store the pair
-                // NetStream => TCPSocket
-                m_Set.add(stream);
-                m_aNetStream2Client[stream] = cl;
+                stream = m_pProxy->connect(m_sTargetHost.c_str(),
+                        m_iTargetPort);
 #ifdef _DEBUG
                 std::cerr << " ok\n";
 #endif
@@ -56,9 +51,21 @@ void Forwarder::update(bool bWait)
             catch(SocketError &e)
             {
 #ifdef _DEBUG
-                std::cerr << " error";
+                std::cerr << " error\n";
 #endif
                 delete cl;
+                cl = NULL;
+            }
+            if(cl != NULL)
+            {
+                // We add it to the SocketSet, and we store the pair
+                // NetStream => TCPSocket
+                m_Set.add(cl);
+                m_Set.add(stream);
+                ForwarderConnection *conn = new ForwarderConnection(
+                        cl, stream);
+                m_aIncoming[cl] = conn;
+                m_aOutgoing[stream] = conn;
             }
         }
         else
@@ -68,20 +75,21 @@ void Forwarder::update(bool bWait)
 #endif
         }
     }
-    else if(m_aConnections.find((TCPSocket*)sock) != m_aConnections.end())
+    else if(m_aIncoming.find(signaled) != m_aIncoming.end())
     {
         // Receives data from a client
 #ifdef _DEBUG
         std::cerr << "Forwarder: receiving data from a client...";
 #endif
-        TCPSocket *cl = (TCPSocket*)sock;
+        ForwarderConnection *conn = m_aIncoming.find(signaled)->second;
+        TCPSocket *cl = conn->incoming;
+        NetStream *stream = conn->outgoing;
         try {
-            NetStream *stream = m_aConnections[cl];
             static char buf[1024];
             int r = cl->recv(buf, 1024, false);
             if(r <= 0)
                 throw SocketConnectionClosed();
-            // Dump copy
+            // Dumb copy
 #ifdef _DEBUG
             std::cerr << " forward (" << r << ")\n";
 #endif
@@ -89,16 +97,13 @@ void Forwarder::update(bool bWait)
         }
         catch(SocketConnectionClosed &e)
         {
-            NetStream *stream = m_aConnections[cl];
-            if(stream)
-            {
-                m_Set.remove(stream);
-                m_aNetStream2Client.erase(stream);
-                delete m_aConnections[cl];
-            }
-            m_aConnections.erase(cl);
             m_Set.remove(cl);
+            m_Set.remove(stream);
+            m_aIncoming.erase(cl);
+            m_aOutgoing.erase(stream);
+            delete conn;
             delete cl;
+            delete stream;
 #ifdef _DEBUG
             std::cerr << " connection closed by the client\n";
 #endif
@@ -110,36 +115,33 @@ void Forwarder::update(bool bWait)
 #ifdef _DEBUG
         std::cerr << "Forwarder: receiving data on a NetStream...";
 #endif
-        std::map<Socket*, TCPSocket*>::iterator it =
-            m_aNetStream2Client.find(sock);
-        if(it != m_aNetStream2Client.end())
-        {
-            TCPSocket *cl = it->second;
-            try {
-                static char buf[1024];
-                int r = m_aConnections[cl]->recv(buf, 1024, false);
-                // Dump copy
-                if(r > 0)
-                {
-#ifdef _DEBUG
-                    std::cerr << " forward (" << r << ")\n";
-#endif
-                    cl->send(buf, r);
-                }
-            }
-            catch(SocketConnectionClosed &e)
+        ForwarderConnection *conn = m_aOutgoing[signaled];
+        TCPSocket *cl = conn->incoming;
+        NetStream *stream = conn->outgoing;
+        try {
+            static char buf[1024];
+            int r = stream->recv(buf, 1024, false);
+            // Dumb copy
+            if(r > 0)
             {
-                m_aNetStream2Client.erase(sock);
-                if(m_aConnections[cl])
-                    delete m_aConnections[cl];
-                m_aConnections.erase(cl);
-                m_Set.remove(cl);
-                m_Set.remove(sock);
-                delete cl;
 #ifdef _DEBUG
-                std::cerr << " connection closed by the remote host\n";
+                std::cerr << " forward (" << r << ")\n";
 #endif
+                cl->send(buf, r);
             }
+        }
+        catch(SocketConnectionClosed &e)
+        {
+            m_Set.remove(cl);
+            m_Set.remove(stream);
+            m_aIncoming.erase(cl);
+            m_aOutgoing.erase(stream);
+            delete conn;
+            delete cl;
+            delete stream;
+#ifdef _DEBUG
+            std::cerr << " connection closed by the remote host\n";
+#endif
         }
     }
 }
