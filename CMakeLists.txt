@@ -17,6 +17,11 @@ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
 # Recursively builds components
 ADD_SUBDIRECTORY(sockets)
+ADD_SUBDIRECTORY(proxy)
+
+# Builds proxychain tool
+ADD_EXECUTABLE(proxychain proxychain.cpp)
+TARGET_LINK_LIBRARIES(proxychain proxy sockets)
 
 # Testing
 OPTION(BUILD_TESTSUITE "Build the test suite (requires CppUnit)" OFF)

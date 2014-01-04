@@ -1,0 +1,10 @@
+#ifndef PROXY_CONFIG_H
+#define PROXY_CONFIG_H
+
+#cmakedefine ENABLE_SOCKS4_CLIENT
+#cmakedefine ENABLE_SOCKS4_SERVER
+#cmakedefine ENABLE_HTTP_CLIENT
+#cmakedefine ENABLE_HTTP_SERVER
+#cmakedefine ENABLE_FORWARDER
+
+#endif

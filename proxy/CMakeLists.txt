@@ -1,0 +1,40 @@
+INCLUDE(CMakeDependentOption)
+
+# Optional components
+OPTION(ENABLE_SOCKS4 "Enable SOCKS4 client/server" ON)
+CMAKE_DEPENDENT_OPTION(ENABLE_SOCKS4_CLIENT "Enable SOCKS4 client" ON
+                         "ENABLE_SOCKS4" OFF)
+CMAKE_DEPENDENT_OPTION(ENABLE_SOCKS4_SERVER "Enable SOCKS4 server" ON
+                         "ENABLE_SOCKS4" OFF)
+OPTION(ENABLE_HTTP "Enable HTTP CONNECT client/server" ON)
+CMAKE_DEPENDENT_OPTION(ENABLE_HTTP_CLIENT "Enable HTTP CONNECT client" ON
+                         "ENABLE_HTTP" OFF)
+CMAKE_DEPENDENT_OPTION(ENABLE_HTTP_SERVER "Enable HTTP CONNECT server" ON
+                         "ENABLE_HTTP" OFF)
+OPTION(ENABLE_FORWARDER "Enable forwarder pseudo-proxy" ON)
+
+CONFIGURE_FILE(
+    "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+    )
+
+# Build source list with enabled components
+SET(PROXY_FILES Proxy.cpp)
+IF(ENABLE_SOCKS4_CLIENT)
+    SET(PROXY_FILES ${PROXY_FILES} Socks4Client.cpp)
+ENDIF()
+IF(ENABLE_SOCKS4_SERVER)
+    SET(PROXY_FILES ${PROXY_FILES} Socks4Server.cpp)
+ENDIF()
+IF(ENABLE_HTTP_CLIENT)
+    SET(PROXY_FILES ${PROXY_FILES} HTTPClient.cpp)
+ENDIF()
+IF(ENABLE_HTTP_SERVER)
+    SET(PROXY_FILES ${PROXY_FILES} HTTPServer.cpp)
+ENDIF()
+IF(ENABLE_FORWARDER)
+    SET(PROXY_FILES ${PROXY_FILES} Forwarder.cpp)
+ENDIF()
+
+# Build library
+ADD_LIBRARY(proxy ${PROXY_FILES})
