@@ -28,8 +28,9 @@ private:
     SocketSet m_Set;
 
 protected:
-    virtual BaseProxyConnection *newConnection()
+    virtual BaseProxyConnection *newConnection(TCPSocket *cl)
     {
+        return new BaseProxyConnection(cl);
     }
 
     virtual void handleInitialData(BaseProxyConnection *,
@@ -73,7 +74,7 @@ public:
             {
                 BaseProxyConnection *conn;
                 try {
-                    conn = newConnection();
+                    conn = newConnection(cl);
                 }
                 catch(SocketError &e)
                 {
