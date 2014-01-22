@@ -6,6 +6,7 @@
 #endif
 #include "sockets/UDP.h"
 
+#include <fstream>
 #include <iostream>
 
 int main(int argc, char **argv)
@@ -148,6 +149,15 @@ int main(int argc, char **argv)
 
     if(do_ssl)
     {
+        {
+            std::ifstream certfile("test-certs/server.crt");
+            if(!certfile.good())
+            {
+                std::cerr << "Can't load test-certs/server.crt\n";
+                return 1;
+            }
+        }
+
         SSLSocket::init();
 
         try {
